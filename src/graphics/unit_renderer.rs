@@ -1,0 +1,85 @@
+use bevy::prelude::*;
+
+use crate::units::Unit;
+use crate::board::Position;
+use crate::states::AnimationState;
+
+use super::{TILE_SIZE, UNIT_Z, UNIT_SPEED};
+
+#[derive(Component)]
+pub struct UnitRenderer;
+
+pub fn animate_units(
+    mut unit_query: Query<(&Position, &mut Transform)>,
+    time: Res<Time>,
+    mut animation_state: ResMut<State<AnimationState>>
+) {
+    let mut animating = false;
+    for (position, mut transform) in unit_query.iter_mut() {
+        let target = Vec3::new(
+            (position.v.x as f32 + 0.5) * TILE_SIZE,
+            (position.v.y as f32 + 0.5) * TILE_SIZE,
+            UNIT_Z
+        );
+        if (target-transform.translation).length() > 0.1 {
+            transform.translation = transform.translation.lerp(
+                target,
+                UNIT_SPEED * time.delta_seconds()
+            );
+            animating = true;
+        }
+    }
+
+    if !animating {
+        animation_state.set(AnimationState::Idle);
+    }
+}
+
+pub fn draw_units(
+    mut commands: Commands,
+    unit_query: Query<(Entity, &Unit, &Position), Without<UnitRenderer>>,
+    sprite_sheet: Res<UnitSprites>
+) {
+    for (entity, unit, position) in unit_query.iter() {
+        let mut sprite = TextureAtlasSprite::new(1);
+        sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
+
+        commands.entity(entity)
+            .insert(UnitRenderer)
+            .insert_bundle(SpriteSheetBundle{
+                sprite: sprite,
+                texture_atlas: sprite_sheet.0.clone(),
+                transform: Transform {
+                    translation: Vec3::new(
+                        TILE_SIZE * (position.v.x as f32 + 0.5),
+                        TILE_SIZE * (position.v.y as f32 + 0.5),
+                        UNIT_Z
+                    ),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+    }
+}
+
+pub struct UnitSprites(pub Handle<TextureAtlas>);
+
+pub fn load_assets(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut asset_list: ResMut<crate::assets::AssetList> 
+) {
+    let image_handle = asset_server.load("ascii.png");
+    asset_list.0.push(image_handle.clone_untyped());
+
+    let atlas = TextureAtlas::from_grid_with_padding(
+        image_handle,
+        Vec2::splat(9.0),
+        16, 16,
+        Vec2::splat(2.0)
+    );
+
+    let atlas_handle = texture_atlases.add(atlas);
+    commands.insert_resource(UnitSprites(atlas_handle));
+}
