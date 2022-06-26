@@ -14,6 +14,9 @@ pub struct Position {
     pub v: Vector2Int
 }
 
+#[derive(Component)]
+pub struct Blocker;
+
 pub struct BoardPlugin;
 
 impl Plugin for BoardPlugin {
@@ -34,7 +37,6 @@ pub struct Board {
 pub fn generate_board(
     mut commands: Commands
 ) {
-    println!("Spawning board");
     let mut rng = rand::thread_rng();
     let mut tiles = HashMap::new();
     for y in 0..SIZE {
@@ -46,10 +48,20 @@ pub fn generate_board(
                 _ => tile::TileKind::Floor
             };
 
+            let is_blocker = match kind {
+                tile::TileKind::Wall => true,
+                _ => false
+            };
+
             let tile = commands.spawn()
                 .insert(tile::Tile{kind: kind})
                 .insert(Position { v: v })
                 .id();
+
+            if is_blocker {
+             commands.entity(tile)
+                .insert(Blocker);
+            };
 
             tiles.insert(v, tile);
         }
@@ -59,5 +71,4 @@ pub fn generate_board(
     commands.spawn()
         .insert(Board {tiles})
         .push_children(&tile_vec);
-    println!("Board ready");
 }

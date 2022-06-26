@@ -1,12 +1,10 @@
-use bevy::prelude::*;
-
 use crate::board::{
+    Blocker,
     Board,
-    Position,
-    tile::Tile
+    Position
 };
 use crate::vectors::{DIAGONAL_DIRECTIONS, ORTHO_DIRECTIONS, Vector2Int};
-use super::action::{Action, ActionType};
+use super::action::{ActionType, ActionValidator, get_validator};
 
 #[derive(Clone)]
 pub struct Behaviour {
@@ -18,15 +16,16 @@ impl Behaviour {
     pub fn possible_positions(
         &self,
         source: Vector2Int,
-        // tile_query: &Query<&Position, With<Tile>>
-        board: &Board
+        board: &Board,
+        blockers: &Vec<(&Position, &Blocker)>
     ) -> Vec::<Vector2Int> {
         let mut positions = Vec::new();
+        let validator = get_validator(&self.action_type);
         for v in &self.pattern {
             let p = source + *v;
             if !board.tiles.contains_key(&p) { continue; }
 
-            positions.push(p);
+            if validator.is_valid(source, p, blockers) { positions.push(p); }
         }
         positions
     }

@@ -30,6 +30,11 @@ impl Plugin for GraphicsPlugin {
         );
         app.add_system_set(
             SystemSet::on_update(AnimationState::Animating)
-                .with_system(unit_renderer::animate_units));
+                .with_system(unit_renderer::animate_units)
+        );
+        app.add_system_set(
+            SystemSet::on_update(GameState::PlayerTurn)
+                .with_system(unit_renderer::camera_follow)
+        );
     }
 }

@@ -1,7 +1,8 @@
 use bevy::prelude::*;
+use rand::prelude::SliceRandom;
 use std::collections::VecDeque;
 
-use crate::board::Position;
+use crate::board::{Blocker, Board, Position};
 use crate::states::{GameState, AnimationState};
 use crate::vectors::Vector2Int;
 
@@ -28,7 +29,9 @@ pub fn tick(
 
 pub fn move_npc(
     mut npc_queue: ResMut<NPCQueue>,
-    mut npc_query: Query<&mut Position, With<NPC>>,
+    mut npc_query: Query<(&mut Position, &Unit), With<NPC>>,
+    board_query: Query<&Board>,
+    blocker_query: Query<(&Position, &Blocker), Without<NPC>>,
     mut game_state: ResMut<State<GameState>>,
     mut animation_state: ResMut<State<AnimationState>>
 ) {
@@ -42,10 +45,23 @@ pub fn move_npc(
         }
     };
 
+    let board = board_query.get_single().unwrap();
+
     npc_queue.current = Some(entity);
-    if let Ok(mut position) = npc_query.get_mut(entity) {
-        position.v += Vector2Int::new(1, 0);
-        animation_state.set(AnimationState::Animating);
+    if let Ok((mut position, unit)) = npc_query.get_mut(entity) {
+        let new_position = get_best_move(
+            unit,
+            position.v,
+            board,
+            &blocker_query.iter().collect()
+        );
+        match new_position {
+            Some(v) => {
+                position.v = v;
+                animation_state.set(AnimationState::Animating);
+            }
+            _ => ()
+        }
     };
 }
 
@@ -75,5 +91,18 @@ pub fn spawn_npcs(
                 ap: 1,
                 behaviour: behaviour.clone()
             });
+    }
+}
+
+fn get_best_move(
+    unit: &Unit,
+    source: Vector2Int,
+    board: &Board,
+    blockers: &Vec<(&Position, &Blocker)>
+) -> Option<Vector2Int> {
+    let positions = unit.behaviour.possible_positions(source, board, blockers);
+    match positions.choose(&mut rand::thread_rng()) {
+        Some(v) => Some(*v),
+        None => None
     }
 }

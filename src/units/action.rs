@@ -1,32 +1,51 @@
-use crate::vectors::Vector2Int;
+use crate::vectors::{Vector2Int, vector_line};
+use crate::board::{Blocker, Position};
 
 #[derive(Clone)]
 pub enum ActionType {
     Walk
 }
 
-pub fn action_by_type(
-    action_type: ActionType,
-    source: Vector2Int,
-    target: Vector2Int
-) -> impl Action {
+pub fn get_validator(
+    action_type: &ActionType
+) -> impl ActionValidator {
     match action_type {
-        ActionType::Walk => Walk::new(source, target)
+        ActionType::Walk => WalkValidator
     }
 }
 
-pub trait Action {
-    fn new(source: Vector2Int, target: Vector2Int) -> Self;
-    fn is_valid() -> bool;
+pub trait ActionValidator {
+    fn is_valid(
+        &self,
+        source: Vector2Int,
+        target: Vector2Int,
+        blockers: &Vec<(&Position, &Blocker)>
+    ) -> bool;
 }
 
-pub struct Walk {}
+pub struct WalkValidator;
 
-impl Action for Walk {
-    fn new(source: Vector2Int, target: Vector2Int) -> Walk {
-        Walk {}
+impl ActionValidator for WalkValidator {
+    fn is_valid(
+        &self,
+        source: Vector2Int,
+        target: Vector2Int,
+        blockers: &Vec<(&Position, &Blocker)>
+    ) -> bool {
+        !has_line_blockers(source, target, blockers)
     }
-    fn is_valid() -> bool {
-        true
+}
+
+fn has_line_blockers(
+    a: Vector2Int,
+    b: Vector2Int,
+    blockers: &Vec<(&Position, &Blocker)>
+) -> bool {
+    let line = vector_line(a, b);
+    if line.len() < 2 { return false; }
+    for idx in 1..line.len() - 1 {
+        if blockers.iter().find(|a| a.0.v == line[idx]).is_some() { return true; }
     }
+
+    return false
 }

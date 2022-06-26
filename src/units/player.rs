@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::board::{Board, Position};
+use crate::board::{Blocker, Board, Position};
 use crate::ui;
 use crate::states::{AnimationState, GameState};
 use crate::vectors::Vector2Int;
@@ -22,6 +22,7 @@ pub fn start_player_turn(
     player_data: Res<PlayerData>,
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
     mut player_query: Query<(&mut Unit, &Position), With<Player>>,
+    blocker_query: Query<(&Position, &Blocker), Without<Player>>,
     board_query: Query<&Board>
 ) {
     if let Ok((mut unit, position)) = player_query.get_single_mut() {
@@ -31,7 +32,8 @@ pub fn start_player_turn(
 
         let range = player_data.current_behaviour.possible_positions(
             position.v, 
-            board
+            board,
+            &blocker_query.iter().collect()
         );
         ev_ui.send(ui::cursor::DrawCursorEvent(range));
     }
