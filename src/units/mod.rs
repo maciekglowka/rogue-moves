@@ -78,7 +78,6 @@ fn spawn_units(
     mut commands: Commands,
     mut game_state: ResMut<State<GameState>>
 ) {
-    println!("Spawning units");
     player::spawn_player(&mut commands);
     npc::spawn_npcs(&mut commands);
     game_state.set(GameState::PlayerTurn);

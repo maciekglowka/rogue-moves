@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::states::GameState;
+use crate::states::{AnimationState, GameState};
 
 pub mod cursor;
 mod input;
@@ -21,7 +21,7 @@ impl Plugin for UIPlugin {
                 .with_system(cursor::draw_cursor)
         );
         app.add_system_set(
-            SystemSet::on_exit(GameState::PlayerTurn)
+            SystemSet::on_enter(AnimationState::Animating)
                 .with_system(cursor::clear_cursor)
         );
     }

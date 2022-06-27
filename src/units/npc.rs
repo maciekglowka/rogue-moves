@@ -48,7 +48,7 @@ pub fn tick(
 
 pub fn move_npc(
     mut npc_queue: ResMut<NPCQueue>,
-    mut npc_query: Query<(&mut Position, &mut Unit), With<NPC>>,
+    mut npc_query: Query<(&mut Position, &mut Unit, &Blocker), With<NPC>>,
     board_query: Query<&Board>,
     blocker_query: Query<(&Position, &Blocker), Without<NPC>>,
     mut game_state: ResMut<State<GameState>>,
@@ -64,25 +64,35 @@ pub fn move_npc(
         }
     };
 
-    let board = board_query.get_single().unwrap();
+    let mut new_position_v = None;
 
-    npc_queue.current = Some(entity);
-    if let Ok((mut position, mut unit)) = npc_query.get_mut(entity) {
-        unit.ap = BASE_AP;
-        let new_position = get_best_move(
+    if let Ok((position, unit, _)) = npc_query.get(entity) {
+        let mut blockers:  Vec<(&Position, &Blocker)> = blocker_query.iter().collect();
+        let npc_blockers: Vec<(&Position, &Blocker)>  = npc_query.iter().map(|(p, _, b)| (p, b)).collect();
+        blockers.extend(npc_blockers);
+
+        let board = board_query.get_single().unwrap();
+
+        new_position_v = get_best_move(
             &unit,
             position.v,
             board,
-            &blocker_query.iter().collect()
+            &blockers
         );
-        match new_position {
+    }
+   
+    if let Ok((mut position, mut unit, _)) = npc_query.get_mut(entity) {  
+        match new_position_v {
             Some(v) => {
                 position.v = v;
-                animation_state.set(AnimationState::Animating);
             }
             _ => ()
-        }
-    };
+        }    
+        unit.ap = BASE_AP;
+        npc_queue.current = Some(entity);
+    }
+
+    animation_state.set(AnimationState::Animating);
 }
 
 pub fn start_npc_turn(
