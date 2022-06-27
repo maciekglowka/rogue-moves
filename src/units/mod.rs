@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use std::collections::VecDeque;
 
 use crate::states::{AnimationState, GameState, SetupLabel};
+use crate::board::Position;
 
 mod action;
 mod behaviour;
@@ -62,6 +63,17 @@ pub struct Unit {
     behaviour: behaviour::Behaviour
 }
 
+impl Unit {
+    pub fn handle_turn_end(&mut self) -> bool {   
+        self.ap -= 1;
+        
+        match self.ap {
+            0 => true,
+            _ => false
+        }
+    }
+}
+
 fn spawn_units(
     mut commands: Commands,
     mut game_state: ResMut<State<GameState>>
@@ -70,4 +82,18 @@ fn spawn_units(
     player::spawn_player(&mut commands);
     npc::spawn_npcs(&mut commands);
     game_state.set(GameState::PlayerTurn);
+}
+
+fn check_unit_interaction(
+    entity: Entity,
+    position: &Position,
+    unit_position: &Query<(Entity, &Position), With<Unit>>
+) -> Option<Entity> {
+    for (other_entity, other_position) in unit_position.iter() {
+        if other_entity == entity { continue; }
+        if position.v== other_position.v {
+            return Some(other_entity)
+        }
+    }
+    None
 }

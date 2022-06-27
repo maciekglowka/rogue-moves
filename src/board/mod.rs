@@ -15,7 +15,9 @@ pub struct Position {
 }
 
 #[derive(Component)]
-pub struct Blocker;
+pub struct Blocker {
+    pub is_targetable: bool
+}
 
 pub struct BoardPlugin;
 
@@ -60,7 +62,7 @@ pub fn generate_board(
 
             if is_blocker {
              commands.entity(tile)
-                .insert(Blocker);
+                .insert(Blocker { is_targetable: false });
             };
 
             tiles.insert(v, tile);

@@ -25,6 +25,10 @@ impl Behaviour {
             let p = source + *v;
             if !board.tiles.contains_key(&p) { continue; }
 
+            if let Some(blocker) = blockers.iter().find(|a| a.0.v == p) {
+                if !blocker.1.is_targetable { continue; }
+            }
+
             if validator.is_valid(source, p, blockers) { positions.push(p); }
         }
         positions
@@ -32,7 +36,17 @@ impl Behaviour {
 }
 
 pub fn get_ortho_pattern(range: u8) -> Vec::<Vector2Int> {
-    return ranged_positions(&ORTHO_DIRECTIONS, range)
+    ranged_positions(&ORTHO_DIRECTIONS, range)
+}
+
+pub fn get_diagonal_pattern(range: u8) -> Vec::<Vector2Int> {
+    ranged_positions(&DIAGONAL_DIRECTIONS, range)
+}
+
+pub fn get_omni_pattern(range: u8) -> Vec::<Vector2Int> {
+    let mut dirs = DIAGONAL_DIRECTIONS.to_vec();
+    dirs.extend(ORTHO_DIRECTIONS);
+    ranged_positions(&dirs, range)
 }
 
 fn ranged_positions<'a, T> (directions: &'a T, range: u8) -> Vec<Vector2Int> 

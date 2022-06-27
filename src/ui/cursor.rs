@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use bevy::{render, sprite};
 
+use crate::board::{Blocker, Board, Position};
 use crate::graphics::{TILE_SIZE, OVERLAY_Z};
+use crate::units::player::{Player, PlayerData};
 use crate::vectors::Vector2Int;
 
 #[derive(Component)]
@@ -11,19 +13,31 @@ pub struct CursorAssets {
     material: Handle<ColorMaterial>
 }
 
-pub struct DrawCursorEvent(pub Vec::<Vector2Int>);
+pub struct DrawCursorEvent;
 
 pub fn draw_cursor(
     mut commands: Commands,
     mut ev_draw_cursor: EventReader<DrawCursorEvent>,
     cursor_query: Query<Entity, With<Cursor>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    assets: Res<CursorAssets>
+    assets: Res<CursorAssets>,
+    blocker_query: Query<(&Position, &Blocker), Without<Player>>,
+    player_query: Query<&Position, With<Player>>,
+    board_query: Query<&Board>,
+    player_data: Res<PlayerData>,
 ) {
-    for ev in ev_draw_cursor.iter() {
+    for _ in ev_draw_cursor.iter() {
         destroy_cursor(&mut commands, &cursor_query);
 
-        let mesh = create_cursor_mesh(&ev.0);
+        let board = board_query.get_single().unwrap();
+        let position = player_query.get_single().unwrap();
+        let range = player_data.current_behaviour.possible_positions(
+            position.v, 
+            board,
+            &blocker_query.iter().collect()
+        );
+
+        let mesh = create_cursor_mesh(&range);
 
         commands.spawn_bundle(sprite::MaterialMesh2dBundle {
             mesh: sprite::Mesh2dHandle(meshes.add(mesh)),
