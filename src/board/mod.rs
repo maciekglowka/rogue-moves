@@ -25,8 +25,13 @@ impl Plugin for BoardPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_enter(GameState::MapGenerate)
+                .with_system(clear_board)
+                .label(SetupLabel::CleanUp)
+        );
+        app.add_system_set(
+            SystemSet::on_enter(GameState::MapGenerate)
                 .with_system(generate_board)
-                .label(SetupLabel::Board)
+                .after(SetupLabel::CleanUp)
         );
     }
 }
@@ -73,4 +78,15 @@ pub fn generate_board(
     commands.spawn()
         .insert(Board {tiles})
         .push_children(&tile_vec);
+}
+
+fn clear_board(
+    mut commands: Commands,
+    query: Query<Entity, With<Board>>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+    game_state.set(GameState::Spawning);
 }

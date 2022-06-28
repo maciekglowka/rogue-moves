@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::units::Unit;
+use crate::units::{Unit, UnitKind};
 use crate::board::Position;
 use crate::states::AnimationState;
 
@@ -41,7 +41,9 @@ pub fn draw_units(
     sprite_sheet: Res<UnitSprites>
 ) {
     for (entity, unit, position) in unit_query.iter() {
-        let mut sprite = TextureAtlasSprite::new(1);
+        let mut sprite = TextureAtlasSprite::new(
+            get_sprite_idx(&unit.kind)
+        );
         sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
 
         commands.entity(entity)
@@ -94,4 +96,13 @@ pub fn load_assets(
 
     let atlas_handle = texture_atlases.add(atlas);
     commands.insert_resource(UnitSprites(atlas_handle));
+}
+
+fn get_sprite_idx(kind: &UnitKind) -> usize {
+    match kind {
+        UnitKind::Player => 1,
+        UnitKind::Rat => 114,
+        UnitKind::Goblin => 103,
+        UnitKind::Cat => 99
+    }
 }

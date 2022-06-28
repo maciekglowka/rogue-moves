@@ -24,7 +24,7 @@ impl Plugin for GraphicsPlugin {
                 .with_system(unit_renderer::load_assets)
         );
         app.add_system_set(
-            SystemSet::on_exit(GameState::MapGenerate)
+            SystemSet::on_exit(GameState::Spawning)
                 .with_system(board_renderer::draw_board)
                 .with_system(unit_renderer::draw_units)
         );

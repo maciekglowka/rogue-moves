@@ -5,6 +5,7 @@ pub enum GameState {
     LoadAssets,
     MainMenu,
     MapGenerate,
+    Spawning,
     PlayerTurn,
     NPCTurn
 }
@@ -18,6 +19,5 @@ pub enum AnimationState {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[derive(SystemLabel)]
 pub enum SetupLabel {
-    Board,
-    Units
+    CleanUp
 }

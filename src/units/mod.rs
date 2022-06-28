@@ -1,12 +1,15 @@
 use bevy::prelude::*;
+use rand::prelude::SliceRandom;
 use std::collections::VecDeque;
 
 use crate::states::{AnimationState, GameState, SetupLabel};
-use crate::board::Position;
+use crate::board::{Blocker, Board, Position};
+use crate::vectors::Vector2Int;
 
 mod action;
 mod behaviour;
-mod npc;
+mod data;
+pub mod npc;
 pub mod player;
 
 pub struct UnitsPlugin;
@@ -14,10 +17,13 @@ pub struct UnitsPlugin;
 impl Plugin for UnitsPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_enter(GameState::MapGenerate)
+            SystemSet::on_enter(GameState::Spawning)
                 .with_system(spawn_units)
-                .label(SetupLabel::Units)
-                .after(SetupLabel::Board)
+        );
+        app.add_system_set(
+            SystemSet::on_enter(GameState::MapGenerate)
+                .with_system(clear_units)
+                .label(SetupLabel::CleanUp)
         );
 
         app.add_event::<player::MovePlayerEvent>();
@@ -47,7 +53,7 @@ impl Plugin for UnitsPlugin {
         );
 
         app.insert_resource(player::PlayerData {
-            current_behaviour: player::get_base_player_behaviour()
+            current_behaviour: data::get_unit_behaviour(&UnitKind::Player)
         });
         app.insert_resource(npc::NPCQueue {
             npcs: VecDeque::new(),
@@ -56,11 +62,18 @@ impl Plugin for UnitsPlugin {
     }
 }
 
+pub enum UnitKind {
+    Player,
+    Rat,
+    Goblin,
+    Cat
+}
 
 #[derive(Component)]
 pub struct Unit {
     ap: u8,
-    behaviour: behaviour::Behaviour
+    behaviour: behaviour::Behaviour,
+    pub kind: UnitKind
 }
 
 impl Unit {
@@ -76,10 +89,24 @@ impl Unit {
 
 fn spawn_units(
     mut commands: Commands,
-    mut game_state: ResMut<State<GameState>>
+    mut game_state: ResMut<State<GameState>>,
+    board_query: Query<&Board>,
+    blocker_query: Query<&Position, With<Blocker>>
 ) {
-    player::spawn_player(&mut commands);
-    npc::spawn_npcs(&mut commands);
+    let board = match board_query.get_single() {
+        Ok(b) => b,
+        Err(_) => return
+    };
+    let mut blocker_positions = blocker_query.iter()
+        .map(|a| a.v)
+        .collect();
+
+    match player::spawn_player(&mut commands, &board, &blocker_positions) {
+        Some(v) => blocker_positions.push(v),
+        None => ()
+    };
+
+    npc::spawn_npcs(&mut commands, &mut blocker_positions, &board);
     game_state.set(GameState::PlayerTurn);
 }
 
@@ -95,4 +122,39 @@ fn check_unit_interaction(
         }
     }
     None
+}
+
+fn clear_units(
+    mut commands: Commands,
+    query: Query<Entity, With<Unit>>
+) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+fn get_spawn_position(
+    blocker_positions: &Vec<Vector2Int>,
+    board: &Board,
+) -> Option<Vector2Int> {
+    let positions = get_possible_spawn_positions(blocker_positions, board);
+    match positions.choose(&mut rand::thread_rng()) {
+        Some(v) => Some(*v),
+        None => None
+    }
+}
+
+fn get_possible_spawn_positions(
+    blocker_positions: &Vec<Vector2Int>,
+    board: &Board
+) -> Vec<Vector2Int> {
+
+    board.tiles.keys()
+        .filter(|v|
+            !blocker_positions
+                .iter()
+                .any(|a| a == *v)
+        )
+        .map(|v| *v)
+        .collect()
 }

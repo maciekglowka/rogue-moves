@@ -5,15 +5,15 @@ use crate::ui;
 use crate::states::{AnimationState, GameState};
 use crate::vectors::Vector2Int;
 
-use super::action::ActionType;
-use super::{Unit, behaviour};
-use super::behaviour::{Behaviour, get_omni_pattern};
+use super::behaviour::Behaviour;
+use super::data::get_unit_behaviour;
+use super::{Unit, UnitKind};
 
 #[derive(Component)]
 pub struct Player;
 
 pub struct PlayerData {
-    pub current_behaviour: behaviour::Behaviour
+    pub current_behaviour: Behaviour
 }
 
 pub struct MovePlayerEvent(pub Vector2Int);
@@ -31,11 +31,26 @@ pub fn start_player_turn(
 pub fn move_player(
     mut ev: EventReader<MovePlayerEvent>,
     mut query: Query<(Entity, &mut Position), With<Player>>,
-    mut animation_state: ResMut<State<AnimationState>>
+    mut animation_state: ResMut<State<AnimationState>>,
+    blocker_query: Query<(&Position, &Blocker), Without<Player>>,
+    board_query: Query<&Board>,
+    player_data: Res<PlayerData>,
 ) {
     if animation_state.current() == &AnimationState::Animating { return ; }
     for ev in ev.iter() {
-        if let Ok((entity, mut position)) = query.get_single_mut() {
+        if let Ok((_, mut position)) = query.get_single_mut() {
+            let board = board_query.get_single().unwrap();
+            
+            let range = player_data.current_behaviour.possible_positions(
+                position.v, 
+                board,
+                &blocker_query.iter().collect()
+            );
+
+            if !range.contains(&ev.0) {
+                continue;
+            }
+
             position.v = ev.0;
             animation_state.set(AnimationState::Animating);
         }
@@ -63,7 +78,7 @@ pub fn tick(
                 commands.entity(killed).despawn_recursive();
             },
             None => {
-                player_data.current_behaviour = get_base_player_behaviour(); 
+                player_data.current_behaviour = get_unit_behaviour(&UnitKind::Player); 
             }
         };            
     }
@@ -80,23 +95,22 @@ pub fn tick(
 
 pub fn spawn_player(
     mut commands: &mut Commands,
-) {
-    let behaviour = get_base_player_behaviour();
+    board: &Board,
+    blocker_positions: &Vec<Vector2Int>
+) -> Option<Vector2Int> {
+    let behaviour = get_unit_behaviour(&UnitKind::Player);
+    let position = super::get_spawn_position(blocker_positions, board);
+    if position.is_some() {
+        commands.spawn()
+            .insert(Position { v: position.unwrap() })
+            .insert(Player)
+            .insert(Blocker { is_targetable: true })
+            .insert(Unit { 
+                ap: 2,
+                behaviour: behaviour,
+                kind: super::UnitKind::Player
+            });
+        }
 
-    commands.spawn()
-        .insert(Position { v: Vector2Int::new(0, 0) })
-        .insert(Player)
-        .insert(Blocker { is_targetable: true })
-        .insert(Unit { 
-            ap: 2,
-            behaviour: behaviour
-        });
-}
-
-pub fn get_base_player_behaviour() -> Behaviour {
-    let pattern = get_omni_pattern(1);
-    Behaviour {
-        pattern: pattern,
-        action_type: ActionType::Walk
-    }
+    position
 }
