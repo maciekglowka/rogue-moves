@@ -1,6 +1,6 @@
 use super::action::ActionType;
 use super::behaviour::{Behaviour, get_omni_pattern, get_ortho_pattern};
-use super::UnitKind;
+use super::{UnitKind, Unit};
 
 pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
     match kind {
@@ -29,4 +29,21 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
             }
         }
     }
+}
+
+pub fn get_unit_rank(kind: &UnitKind) -> u32 {
+    match kind {
+        UnitKind::Goblin => 2,
+        UnitKind::Rat => 1,
+        UnitKind::Cat => 3,
+        _ => 0
+    }
+}
+
+pub fn get_npc_types() -> Vec<UnitKind> {
+    vec![
+        UnitKind::Goblin,
+        UnitKind::Rat,
+        UnitKind::Cat
+    ]
 }

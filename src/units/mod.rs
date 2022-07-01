@@ -11,6 +11,7 @@ mod behaviour;
 mod data;
 pub mod npc;
 pub mod player;
+mod utils;
 
 pub struct UnitsPlugin;
 
@@ -53,7 +54,8 @@ impl Plugin for UnitsPlugin {
         );
 
         app.insert_resource(player::PlayerData {
-            current_behaviour: data::get_unit_behaviour(&UnitKind::Player)
+            current_behaviour: data::get_unit_behaviour(&UnitKind::Player),
+            level: 0
         });
         app.insert_resource(npc::NPCQueue {
             npcs: VecDeque::new(),
@@ -62,6 +64,7 @@ impl Plugin for UnitsPlugin {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum UnitKind {
     Player,
     Rat,
@@ -91,8 +94,11 @@ fn spawn_units(
     mut commands: Commands,
     mut game_state: ResMut<State<GameState>>,
     board_query: Query<&Board>,
-    blocker_query: Query<&Position, With<Blocker>>
+    blocker_query: Query<&Position, With<Blocker>>,
+    mut player_data: ResMut<player::PlayerData>
 ) {
+    player_data.level += 1;
+
     let board = match board_query.get_single() {
         Ok(b) => b,
         Err(_) => return
@@ -106,7 +112,7 @@ fn spawn_units(
         None => ()
     };
 
-    npc::spawn_npcs(&mut commands, &mut blocker_positions, &board);
+    npc::spawn_npcs(&mut commands, &mut blocker_positions, &board, (player_data.level as f32).powf(1.5) as u32);
     game_state.set(GameState::PlayerTurn);
 }
 

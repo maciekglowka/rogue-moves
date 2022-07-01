@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use rand::prelude::SliceRandom;
 use std::collections::VecDeque;
 
 use crate::board::{Blocker, Board, Position};
@@ -117,19 +116,15 @@ pub fn start_npc_turn(
 pub fn spawn_npcs(
     commands: &mut Commands,
     blocker_positions: &mut Vec<Vector2Int>,
-    board: &Board
-) {   
-    for idx in 0..4 {
+    board: &Board,
+    rank_sum: u32
+) { 
+    let kinds = super::utils::get_npc_set(rank_sum);
+    for kind in kinds {
         let position = super::get_spawn_position(blocker_positions, board);
         if position.is_none() { continue; }
 
         blocker_positions.push(position.unwrap());
-
-        let kind = match idx % 3 {
-            1 => super::UnitKind::Goblin,
-            2 => super::UnitKind::Rat,
-            _ => super::UnitKind::Cat
-        };
 
         commands.spawn()
             .insert(Position { v: position.unwrap() })
@@ -160,7 +155,10 @@ fn get_best_move(
 
     let mut rated = Vec::new();
     for v in positions {
-        let mut rank = v.dist(player_position.v);
+        let mut rank = match v.dist(player_position.v) {
+            d if d >=2. || d < 1. => d,
+            _ => 5.
+        };
         if npc_positions.iter().any(|p| p.v == v) {
             rank += 5.;
         }

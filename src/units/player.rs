@@ -13,7 +13,8 @@ use super::{Unit, UnitKind};
 pub struct Player;
 
 pub struct PlayerData {
-    pub current_behaviour: Behaviour
+    pub current_behaviour: Behaviour,
+    pub level: u32
 }
 
 pub struct MovePlayerEvent(pub Vector2Int);
