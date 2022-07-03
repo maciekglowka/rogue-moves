@@ -1,18 +1,20 @@
 use crate::vectors::{Vector2Int, vector_line};
 use crate::board::{Blocker, Position};
 
-#[derive(Clone)]
-pub enum ActionType {
-    Walk
-}
+// #[derive(Clone)]
+// pub enum ActionType {
+//     Walk,
+//     Jump
+// }
 
-pub fn get_validator(
-    action_type: &ActionType
-) -> impl ActionValidator {
-    match action_type {
-        ActionType::Walk => WalkValidator
-    }
-}
+// pub fn get_validator(
+//     action_type: &ActionType
+// ) -> impl ActionValidator {
+//     match action_type {
+//         ActionType::Walk => return WalkValidator,
+//         ActionType::Jump => return JumpValidator
+//     };
+// }
 
 pub trait ActionValidator {
     fn is_valid(
@@ -34,6 +36,35 @@ impl ActionValidator for WalkValidator {
     ) -> bool {
         !has_line_blockers(source, target, blockers)
     }
+}
+
+pub struct JumpValidator;
+
+impl ActionValidator for JumpValidator {
+    fn is_valid(
+        &self,
+        source: Vector2Int,
+        target: Vector2Int,
+        blockers: &Vec<(&Position, &Blocker)>
+    ) -> bool {
+        true
+    }
+}
+
+pub fn walk_validator(
+    source: Vector2Int,
+    target: Vector2Int,
+    blockers: &Vec<(&Position, &Blocker)>
+) -> bool {
+    !has_line_blockers(source, target, blockers)
+}
+
+pub fn jump_validator(
+    source: Vector2Int,
+    target: Vector2Int,
+    blockers: &Vec<(&Position, &Blocker)>
+) -> bool {
+    true
 }
 
 fn has_line_blockers(

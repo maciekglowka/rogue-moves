@@ -55,6 +55,7 @@ impl Plugin for UnitsPlugin {
 
         app.insert_resource(player::PlayerData {
             current_behaviour: data::get_unit_behaviour(&UnitKind::Player),
+            captured_behaviour: None,
             level: 0
         });
         app.insert_resource(npc::NPCQueue {
@@ -64,12 +65,14 @@ impl Plugin for UnitsPlugin {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum UnitKind {
     Player,
     Rat,
     Goblin,
-    Cat
+    Cat,
+    Puma,
+    Knight
 }
 
 #[derive(Component)]

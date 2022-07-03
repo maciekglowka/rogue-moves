@@ -103,6 +103,8 @@ fn get_sprite_idx(kind: &UnitKind) -> usize {
         UnitKind::Player => 1,
         UnitKind::Rat => 114,
         UnitKind::Goblin => 103,
-        UnitKind::Cat => 99
+        UnitKind::Cat => 99,
+        &UnitKind::Knight => 107,
+        UnitKind::Puma => 112
     }
 }

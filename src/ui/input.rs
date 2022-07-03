@@ -5,6 +5,23 @@ use crate::states::GameState;
 use crate::vectors::Vector2Int;
 
 
+pub fn keyboard_press(
+    mut keyboard: ResMut<Input<KeyCode>>,
+    mut player_data: ResMut<crate::units::player::PlayerData>,
+    mut ev_ui: EventWriter<super::cursor::DrawCursorEvent>,
+) {
+    if keyboard.just_pressed(KeyCode::Space) {
+        keyboard.clear();
+        if let Some(behaviour) = &player_data.captured_behaviour {
+            player_data.current_behaviour = behaviour.clone();
+            player_data.captured_behaviour = None;
+            ev_ui.send(super::cursor::DrawCursorEvent);
+            println!("used");
+        }
+    }
+}
+
+
 pub fn mouse_press(
     buttons: Res<Input<MouseButton>>,
     windows: Res<Windows>,

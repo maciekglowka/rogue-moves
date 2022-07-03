@@ -19,6 +19,7 @@ impl Plugin for UIPlugin {
         app.add_system_set(
             SystemSet::on_update(GameState::PlayerTurn)
                 .with_system(cursor::draw_cursor)
+                .with_system(input::keyboard_press)
         );
         app.add_system_set(
             SystemSet::on_enter(AnimationState::Animating)

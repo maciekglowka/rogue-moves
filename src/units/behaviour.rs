@@ -4,12 +4,17 @@ use crate::board::{
     Position
 };
 use crate::vectors::{DIAGONAL_DIRECTIONS, ORTHO_DIRECTIONS, Vector2Int};
-use super::action::{ActionType, ActionValidator, get_validator};
+// use super::action::{ActionType, ActionValidator, get_validator};
 
 #[derive(Clone)]
 pub struct Behaviour {
     pub pattern: Vec::<Vector2Int>,
-    pub action_type: ActionType
+    // pub action_type: ActionType,
+    pub validator: fn(
+        source: Vector2Int,
+        target: Vector2Int,
+        blockers: &Vec<(&Position, &Blocker)>
+    ) -> bool
 }
 
 impl Behaviour {
@@ -20,7 +25,7 @@ impl Behaviour {
         blockers: &Vec<(&Position, &Blocker)>
     ) -> Vec::<Vector2Int> {
         let mut positions = Vec::new();
-        let validator = get_validator(&self.action_type);
+        // let validator = get_validator(&self.action_type);
         for v in &self.pattern {
             let p = source + *v;
             if !board.tiles.contains_key(&p) { continue; }
@@ -29,7 +34,7 @@ impl Behaviour {
                 if !blocker.1.is_targetable { continue; }
             }
 
-            if validator.is_valid(source, p, blockers) { positions.push(p); }
+            if (self.validator)(source, p, blockers) { positions.push(p); }
         }
         positions
     }
@@ -47,6 +52,15 @@ pub fn get_omni_pattern(range: u8) -> Vec::<Vector2Int> {
     let mut dirs = DIAGONAL_DIRECTIONS.to_vec();
     dirs.extend(ORTHO_DIRECTIONS);
     ranged_positions(&dirs, range)
+}
+
+pub fn get_knight_pattern() -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(2, 1), Vector2Int::new(1, 2),
+        Vector2Int::new(-2, 1), Vector2Int::new(-1, 2),
+        Vector2Int::new(-2, -1), Vector2Int::new(-1, -2),
+        Vector2Int::new(2, -1), Vector2Int::new(1, -2)
+    ]
 }
 
 fn ranged_positions<'a, T> (directions: &'a T, range: u8) -> Vec<Vector2Int> 
