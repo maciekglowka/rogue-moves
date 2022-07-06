@@ -51,7 +51,7 @@ pub fn generate_board(
             let v = Vector2Int::new(x as i32, y as i32);
 
             let kind = match rng.gen_range(0.0..1.0) {
-                a if a < 0.1 => tile::TileKind::Wall,
+                a if a < 0.05 => tile::TileKind::Wall,
                 _ => tile::TileKind::Floor
             };
 

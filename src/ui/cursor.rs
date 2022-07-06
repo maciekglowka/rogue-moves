@@ -3,14 +3,18 @@ use bevy::{render, sprite};
 
 use crate::board::{Blocker, Board, Position};
 use crate::graphics::{TILE_SIZE, OVERLAY_Z};
-use crate::units::player::{Player, PlayerData};
+use crate::units::{
+    Unit,
+    player::{Player, PlayerData}
+};
 use crate::vectors::Vector2Int;
 
 #[derive(Component)]
 pub struct Cursor;
 
 pub struct CursorAssets {
-    material: Handle<ColorMaterial>
+    material: Handle<ColorMaterial>,
+    pub npc: Option<Entity>
 }
 
 pub struct DrawCursorEvent;
@@ -21,24 +25,47 @@ pub fn draw_cursor(
     cursor_query: Query<Entity, With<Cursor>>,
     mut meshes: ResMut<Assets<Mesh>>,
     assets: Res<CursorAssets>,
-    blocker_query: Query<(&Position, &Blocker), Without<Player>>,
-    player_query: Query<&Position, With<Player>>,
+    blocker_query: Query<(&Position, &Blocker), Without<Unit>>,
+    unit_query: Query<(&Unit, &Position, &Blocker)>,
+    player_query: Query<Entity, With<Player>>,
     board_query: Query<&Board>,
     player_data: Res<PlayerData>,
 ) {
     for _ in ev_draw_cursor.iter() {
         destroy_cursor(&mut commands, &cursor_query);
 
+        let entity = match assets.npc {
+            Some(e) => e,
+            None => {
+                if let Ok(e) = player_query.get_single() { e } else { return; }
+            }
+        };
+
+        let behaviour = match assets.npc {
+            Some(e) => {
+                if let Ok((u, _, _)) = unit_query.get(e) { &u.behaviour } else { return; }
+            },
+            None => {
+                &player_data.current_behaviour
+            }
+        };
+
         let board = board_query.get_single().unwrap();
-        let position = player_query.get_single().unwrap();
-        let range = player_data.current_behaviour.possible_positions(
+
+        let (_, position, _) = unit_query.get(entity).unwrap();
+    
+        let mut blockers:  Vec<(&Position, &Blocker)> = blocker_query.iter().collect();
+        let unit_blockers: Vec<(&Position, &Blocker)> = unit_query.iter().map(|(_, p, b)| (p, b)).collect();
+        blockers.extend(unit_blockers);
+    
+        let range = behaviour.possible_positions(
             position.v, 
             board,
-            &blocker_query.iter().collect()
+            &blockers
         );
-
+    
         let mesh = create_cursor_mesh(&range);
-
+    
         commands.spawn_bundle(sprite::MaterialMesh2dBundle {
             mesh: sprite::Mesh2dHandle(meshes.add(mesh)),
             material: assets.material.clone(),
@@ -51,9 +78,9 @@ pub fn draw_cursor(
 
 pub fn clear_cursor(
     mut commands: Commands,
-    query: Query<Entity, With<Cursor>>
+    query: Query<Entity, With<Cursor>>,
 ) {
-    destroy_cursor(&mut commands, &query)
+    destroy_cursor(&mut commands, &query);
 }
 
 fn destroy_cursor(
@@ -61,7 +88,7 @@ fn destroy_cursor(
     query: &Query<Entity, With<Cursor>>
 ) {
     for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn_recursive()
     }
 }
 
@@ -79,7 +106,10 @@ pub fn load_assets(
     );
 
     commands.insert_resource(
-        CursorAssets { material: material_handle }
+        CursorAssets { 
+            material: material_handle,
+            npc: None
+        }
     );
 }
 

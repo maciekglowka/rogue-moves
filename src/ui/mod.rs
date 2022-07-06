@@ -9,7 +9,10 @@ pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(input::mouse_press);
+        app.add_system_set(
+            SystemSet::on_update(GameState::MainMenu)
+                .with_system(input::mouse_press_menu)
+        );
 
         app.add_system_set(
             SystemSet::on_enter(GameState::LoadAssets)
@@ -19,7 +22,7 @@ impl Plugin for UIPlugin {
         app.add_system_set(
             SystemSet::on_update(GameState::PlayerTurn)
                 .with_system(cursor::draw_cursor)
-                .with_system(input::keyboard_press)
+                .with_system(input::mouse_press_game)
         );
         app.add_system_set(
             SystemSet::on_enter(AnimationState::Animating)

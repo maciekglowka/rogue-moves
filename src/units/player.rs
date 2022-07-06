@@ -22,9 +22,9 @@ pub struct MovePlayerEvent(pub Vector2Int);
 
 pub fn start_player_turn(
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
-    mut player_query: Query<&mut Unit, With<Player>>,
+    mut player_query: Query<(Entity, &mut Unit), With<Player>>,
 ) {
-    if let Ok(mut unit) = player_query.get_single_mut() {
+    if let Ok((entity, mut unit)) = player_query.get_single_mut() {
         unit.ap = 2;
         ev_ui.send(ui::cursor::DrawCursorEvent);
     }
@@ -76,17 +76,13 @@ pub fn tick(
         match super::check_unit_interaction(entity, position, &unit_position) {
             Some(killed) => {
                 let killed_unit = unit_query.get(killed).unwrap();
-                // player_data.captured_behaviour = Some(killed_unit.behaviour.clone());
+                
                 player_data.current_behaviour = killed_unit.behaviour.clone();
                 commands.entity(killed).despawn_recursive();
-                println!("captured {:?}", killed_unit.kind);
             },
-            None => {
-                // player_data.current_behaviour = get_unit_behaviour(&UnitKind::Player); 
-            }
+            None => {}
         };            
     }
-    // player_data.current_behaviour = get_unit_behaviour(&UnitKind::Player); 
     let mut unit = unit_query.get_mut(entity).unwrap();
     let turn_end = unit.handle_turn_end();
 

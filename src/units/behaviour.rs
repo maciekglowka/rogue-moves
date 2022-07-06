@@ -63,6 +63,29 @@ pub fn get_knight_pattern() -> Vec::<Vector2Int> {
     ]
 }
 
+pub fn get_turtle_pattern() -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(0, 1), Vector2Int::new(0, 2),
+        Vector2Int::new(0, -1), Vector2Int::new(0, -2),
+        Vector2Int::new(-1, 0), Vector2Int::new(1, 0)
+    ]
+}
+
+// pub fn get_zigzag_pattern(dir: i32) -> Vec::<Vector2Int> {
+//     vec![
+//         Vector2Int::new(dir, 1), Vector2Int::new(dir, 0),
+//         Vector2Int::new(-dir, -1), Vector2Int::new(-dir, 0),
+//     ]
+// }
+
+pub fn get_ring_pattern(range: i32) -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(-range, range), Vector2Int::new(0, range), Vector2Int::new(range, range),
+        Vector2Int::new(-range, 0), Vector2Int::new(range, 0),
+        Vector2Int::new(-range, -range), Vector2Int::new(0, -range), Vector2Int::new(range, -range),
+    ]
+}
+
 fn ranged_positions<'a, T> (directions: &'a T, range: u8) -> Vec<Vector2Int> 
 where &'a T: std::iter::IntoIterator<Item=&'a Vector2Int> {
     let mut positions = Vec::new();

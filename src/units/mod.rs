@@ -7,7 +7,7 @@ use crate::board::{Blocker, Board, Position};
 use crate::vectors::Vector2Int;
 
 mod action;
-mod behaviour;
+pub mod behaviour;
 mod data;
 pub mod npc;
 pub mod player;
@@ -68,7 +68,9 @@ impl Plugin for UnitsPlugin {
 #[derive(Clone, Copy, Debug)]
 pub enum UnitKind {
     Player,
+    Turtle,
     Rat,
+    Frog,
     Goblin,
     Cat,
     Puma,
@@ -78,7 +80,7 @@ pub enum UnitKind {
 #[derive(Component)]
 pub struct Unit {
     ap: u8,
-    behaviour: behaviour::Behaviour,
+    pub behaviour: behaviour::Behaviour,
     pub kind: UnitKind
 }
 

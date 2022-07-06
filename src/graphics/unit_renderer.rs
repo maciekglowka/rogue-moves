@@ -101,10 +101,12 @@ pub fn load_assets(
 fn get_sprite_idx(kind: &UnitKind) -> usize {
     match kind {
         UnitKind::Player => 1,
+        UnitKind::Turtle => 116,
+        UnitKind::Frog => 102,
         UnitKind::Rat => 114,
         UnitKind::Goblin => 103,
         UnitKind::Cat => 99,
-        &UnitKind::Knight => 107,
+        UnitKind::Knight => 107,
         UnitKind::Puma => 112
     }
 }
