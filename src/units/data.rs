@@ -1,5 +1,5 @@
 use super::action::{walk_validator, jump_validator};
-use super::behaviour::{Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_turtle_pattern, get_ring_pattern};
+use super::behaviour::{Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_turtle_pattern, get_frog_pattern};
 use super::{UnitKind, Unit};
 
 pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
@@ -12,13 +12,13 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
         },
         UnitKind::Turtle => {
             Behaviour {
-                pattern: get_ortho_pattern(1),
+                pattern: get_turtle_pattern(),
                 validator: walk_validator
             }
         },
         UnitKind::Frog => {
             Behaviour {
-                pattern: get_ring_pattern(2),
+                pattern: get_frog_pattern(),
                 validator: jump_validator
             }
         },

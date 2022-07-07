@@ -33,8 +33,18 @@ impl Plugin for GraphicsPlugin {
                 .with_system(unit_renderer::animate_units)
         );
         app.add_system_set(
-            SystemSet::on_update(GameState::PlayerTurn)
-                .with_system(unit_renderer::camera_follow)
+            SystemSet::on_exit(GameState::Spawning)
+                .with_system(camera_center)
         );
+    }
+}
+
+pub fn camera_center(
+    mut camera_query: Query<&mut Transform, (Without<crate::units::player::Player>, With<crate::camera::MainCamera>)>
+) {
+    if let Ok(mut camera_transform) = camera_query.get_single_mut() {
+        let half = TILE_SIZE * (crate::board::SIZE / 2) as f32;
+        camera_transform.translation.x = half;
+        camera_transform.translation.y = half;
     }
 }

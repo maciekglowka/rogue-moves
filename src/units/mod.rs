@@ -79,7 +79,7 @@ pub enum UnitKind {
 
 #[derive(Component)]
 pub struct Unit {
-    ap: u8,
+    pub ap: u8,
     pub behaviour: behaviour::Behaviour,
     pub kind: UnitKind
 }
