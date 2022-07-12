@@ -33,6 +33,10 @@ impl Plugin for BoardPlugin {
                 .with_system(generate_board)
                 .after(SetupLabel::CleanUp)
         );
+        app.add_system_set(
+            SystemSet::on_exit(GameState::GameOver)
+                .with_system(clear_board)
+        );
     }
 }
 
@@ -88,5 +92,7 @@ fn clear_board(
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
     }
-    game_state.set(GameState::Spawning);
+    if game_state.current() == &GameState::MapGenerate {
+        game_state.set(GameState::Spawning);
+    }
 }

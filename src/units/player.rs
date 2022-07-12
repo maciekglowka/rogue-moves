@@ -18,15 +18,28 @@ pub struct PlayerData {
     pub level: u32
 }
 
+pub fn reset_player_data(
+    mut commands: Commands
+) {
+    commands.insert_resource(PlayerData {
+        current_behaviour: super::data::get_unit_behaviour(&UnitKind::Player),
+        captured_behaviour: None,
+        level: 0
+    });
+}
+
 pub struct MovePlayerEvent(pub Vector2Int);
 
 pub fn start_player_turn(
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
     mut player_query: Query<(Entity, &mut Unit), With<Player>>,
+    mut game_state: ResMut<State<GameState>>,
 ) {
-    if let Ok((entity, mut unit)) = player_query.get_single_mut() {
+    if let Ok((_entity, mut unit)) = player_query.get_single_mut() {
         unit.ap = 2;
         ev_ui.send(ui::cursor::DrawCursorEvent);
+    } else {
+        game_state.set(GameState::GameOver);
     }
 }
 
@@ -34,6 +47,7 @@ pub fn move_player(
     mut ev: EventReader<MovePlayerEvent>,
     mut query: Query<(Entity, &mut Position), With<Player>>,
     mut animation_state: ResMut<State<AnimationState>>,
+    mut game_state: ResMut<State<GameState>>,
     blocker_query: Query<(&Position, &Blocker), Without<Player>>,
     board_query: Query<&Board>,
     player_data: Res<PlayerData>,

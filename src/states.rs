@@ -7,7 +7,8 @@ pub enum GameState {
     MapGenerate,
     Spawning,
     PlayerTurn,
-    NPCTurn
+    NPCTurn,
+    GameOver
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]

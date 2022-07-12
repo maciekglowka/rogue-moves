@@ -9,6 +9,23 @@ use crate::units::{
 #[derive(Component)]
 pub struct StatusBar;
 
+fn destroy_status(
+    commands: &mut Commands,
+    status_query: &Query<Entity, With<StatusBar>>,
+) {
+    for entity in status_query.iter() {
+        commands.entity(entity)
+            .despawn_recursive()
+    }
+}
+
+pub fn clear_status(
+    mut commands: Commands,
+    status_query: Query<Entity, With<StatusBar>>,
+) {
+    destroy_status(&mut commands, &status_query);
+}
+
 pub fn draw_status(
     mut commands: Commands,
     status_query: Query<Entity, With<StatusBar>>,
@@ -18,14 +35,11 @@ pub fn draw_status(
     mut ev_draw_cursor: EventReader<super::cursor::DrawCursorEvent>,
 ) {
     for _ in ev_draw_cursor.iter() {
-        for entity in status_query.iter() {
-            commands.entity(entity)
-                .despawn_recursive()
-        }
+        destroy_status(&mut commands, &status_query);
 
         if let Ok(player) = player_query.get_single() {
             let s = format!("Level: {} | {}", player_data.level, "O".repeat(player.ap as usize));
-
+            let color = Color::Rgba { red: 0.84, green: 0.85, blue: 0.84, alpha: 1. };
             commands
             .spawn_bundle(TextBundle {
                 style: Style {
@@ -40,9 +54,9 @@ pub fn draw_status(
                 text: Text::with_section(
                     s,
                     TextStyle {
-                        color: Color::WHITE,
+                        color: color,
                         font: assets.font.clone(),
-                        font_size: 32.,
+                        font_size: 24.,
                         ..Default::default()
                     },
                     TextAlignment { 

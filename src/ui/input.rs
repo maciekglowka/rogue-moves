@@ -11,11 +11,22 @@ use crate::vectors::Vector2Int;
 
 
 pub fn mouse_press_menu(
-    buttons: Res<Input<MouseButton>>,
+    mut buttons: ResMut<Input<MouseButton>>,
     mut game_state: ResMut<State<GameState>>
 ) {
     if buttons.just_pressed(MouseButton::Left) {
+        buttons.clear();
         game_state.set(GameState::MapGenerate);
+    }
+}
+
+pub fn mouse_press_game_over(
+    mut buttons: ResMut<Input<MouseButton>>,
+    mut game_state: ResMut<State<GameState>>
+) {
+    if buttons.just_pressed(MouseButton::Left) {
+        buttons.clear();
+        game_state.set(GameState::MainMenu);
     }
 }
 
@@ -57,30 +68,6 @@ pub fn mouse_press_game(
     }
 }
 
-// pub fn mouse_hover(
-//     windows: Res<Windows>,
-//     camera_query: Query<(&Camera, &GlobalTransform), With<crate::camera::MainCamera>>,
-//     unit_query: Query<(Entity, &Position), With<NPC>>,
-//     mut assets: ResMut<super::cursor::CursorAssets>,
-//     mut ev_ui: EventWriter<super::cursor::DrawCursorEvent>
-// ) {
-//     if let Some(world_pos) = mouse_to_world(windows, &camera_query) {
-//         let v = Vector2Int::from_world(world_pos.x, world_pos.y);
-//         for (entity, position) in unit_query.iter() {
-//             if position.v != v { continue; }
-
-//             if assets.npc != Some(entity) {
-//                 assets.npc = Some(entity);
-//                 ev_ui.send(super::cursor::DrawCursorEvent);
-//             }
-//             return;
-//         }
-//     }
-//     if !assets.npc.is_none() { 
-//         assets.npc = None; 
-//         ev_ui.send(super::cursor::DrawCursorEvent);
-//     }
-// }
 
 fn mouse_to_world(
     windows: &Res<Windows>,

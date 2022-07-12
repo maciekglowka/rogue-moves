@@ -101,8 +101,9 @@ pub fn load_assets(
     let texture_handle = asset_server.load("cursor.png");
     asset_list.0.push(texture_handle.clone_untyped());
 
+    let color = Color::Rgba { red: 0.84, green: 0.85, blue: 0.84, alpha: 1. };
     let material_handle = materials.add(
-        ColorMaterial{ color: Color::WHITE, texture: Some(texture_handle)}
+        ColorMaterial{ color: color, texture: Some(texture_handle)}
     );
 
     commands.insert_resource(

@@ -17,6 +17,12 @@ pub struct UnitsPlugin;
 
 impl Plugin for UnitsPlugin {
     fn build(&self, app: &mut App) {
+        app.add_startup_system(player::reset_player_data);
+        app.add_system_set(
+            SystemSet::on_exit(GameState::GameOver)
+                .with_system(player::reset_player_data)
+                .with_system(clear_units)
+        );
         app.add_system_set(
             SystemSet::on_enter(GameState::Spawning)
                 .with_system(spawn_units)
@@ -52,12 +58,6 @@ impl Plugin for UnitsPlugin {
                 .with_system(player::tick)
                 .with_system(npc::tick)
         );
-
-        app.insert_resource(player::PlayerData {
-            current_behaviour: data::get_unit_behaviour(&UnitKind::Player),
-            captured_behaviour: None,
-            level: 0
-        });
         app.insert_resource(npc::NPCQueue {
             npcs: VecDeque::new(),
             current: None

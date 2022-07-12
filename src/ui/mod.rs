@@ -23,7 +23,15 @@ impl Plugin for UIPlugin {
             SystemSet::on_exit(GameState::MainMenu)
                 .with_system(main_menu::clear_menu)
         );
-
+        app.add_system_set(
+            SystemSet::on_update(GameState::GameOver)
+                .with_system(input::mouse_press_game_over)
+        );
+        app.add_system_set(
+            SystemSet::on_exit(GameState::GameOver)
+                .with_system(cursor::clear_cursor)
+                .with_system(status::clear_status)
+        );
         app.add_system_set(
             SystemSet::on_enter(GameState::LoadAssets)
                 .with_system(cursor::load_assets)
