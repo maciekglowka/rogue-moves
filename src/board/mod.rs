@@ -7,7 +7,7 @@ use crate::states::{GameState, SetupLabel};
 
 pub mod tile;
 
-pub const SIZE: u8 = 8;
+pub const SIZE: u8 = 6;
 
 #[derive(Component)]
 pub struct Position {

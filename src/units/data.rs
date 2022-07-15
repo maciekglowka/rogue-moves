@@ -1,5 +1,8 @@
 use super::action::{walk_validator, jump_validator};
-use super::behaviour::{Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_turtle_pattern, get_frog_pattern};
+use super::behaviour::{
+    Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_turtle_pattern, get_frog_pattern,
+    get_cat_pattern, get_puma_pattern, get_rat_pattern
+};
 use super::{UnitKind, Unit};
 
 pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
@@ -30,14 +33,14 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
         },
         UnitKind::Rat => {
             Behaviour {
-                pattern: get_omni_pattern(1),
+                pattern: get_rat_pattern(),
                 validator: walk_validator
             }
         },
         UnitKind::Cat => {
             Behaviour {
-                pattern: get_ortho_pattern(16),
-                validator: walk_validator
+                pattern: get_cat_pattern(),
+                validator: jump_validator
             }
         },
         UnitKind::Knight => {
@@ -48,8 +51,8 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
         },
         UnitKind::Puma => {
             Behaviour {
-                pattern: get_omni_pattern(16),
-                validator: walk_validator
+                pattern: get_puma_pattern(),
+                validator: jump_validator
             }
         }
     }
@@ -58,12 +61,12 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
 pub fn get_unit_rank(kind: &UnitKind) -> u32 {
     match kind {
         UnitKind::Turtle => 1,
-        UnitKind::Frog => 3,
+        UnitKind::Frog => 2,
         UnitKind::Goblin => 2,
-        UnitKind::Rat => 2,
-        UnitKind::Cat => 4,
+        UnitKind::Rat => 3,
+        UnitKind::Cat => 2,
         UnitKind::Knight => 3,
-        UnitKind::Puma => 5,
+        UnitKind::Puma => 3,
         UnitKind::Player => 0
     }
 }

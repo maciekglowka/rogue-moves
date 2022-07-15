@@ -79,6 +79,30 @@ pub fn get_frog_pattern() -> Vec::<Vector2Int> {
     ]
 }
 
+pub fn get_cat_pattern() -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(-1, 1), Vector2Int::new(1, 1),
+        Vector2Int::new(0, -1),
+        Vector2Int::new(-2, -0), Vector2Int::new(2, -0),
+    ]
+}
+
+pub fn get_puma_pattern() -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(-1, -2), Vector2Int::new(1, -2),
+        Vector2Int::new(-1, 1), Vector2Int::new(1, 1),
+        Vector2Int::new(0, -1)
+    ]
+}
+
+pub fn get_rat_pattern() -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(-1, 0), Vector2Int::new(1, 0),
+        Vector2Int::new(-1, 1), Vector2Int::new(1, 1),
+        Vector2Int::new(0, -1)
+    ]
+}
+
 // pub fn get_zigzag_pattern(dir: i32) -> Vec::<Vector2Int> {
 //     vec![
 //         Vector2Int::new(dir, 1), Vector2Int::new(dir, 0),
