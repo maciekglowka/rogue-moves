@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::board::{Blocker, Board, Position};
+use crate::board::{
+    Blocker, Board, Position,
+    utils::get_spawn_position
+};
 use crate::ui;
 use crate::states::{AnimationState, GameState};
 use crate::vectors::Vector2Int;
@@ -113,7 +116,7 @@ pub fn spawn_player(
     blocker_positions: &Vec<Vector2Int>
 ) -> Option<Vector2Int> {
     let behaviour = get_unit_behaviour(&UnitKind::Player);
-    let position = super::get_spawn_position(blocker_positions, board);
+    let position = get_spawn_position(blocker_positions, board);
     if position.is_some() {
         commands.spawn()
             .insert(Position { v: position.unwrap() })

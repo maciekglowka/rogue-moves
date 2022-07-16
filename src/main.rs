@@ -4,6 +4,7 @@ mod assets;
 mod board;
 mod camera;
 mod graphics;
+mod items;
 mod manager;
 mod states;
 mod ui;
@@ -33,6 +34,7 @@ fn main() {
 
     app.add_plugin(board::BoardPlugin);
     app.add_plugin(units::UnitsPlugin);
+    app.add_plugin(items::ItemsPlugin);
     app.add_plugin(graphics::GraphicsPlugin);
 
     app.add_plugin(ui::UIPlugin);

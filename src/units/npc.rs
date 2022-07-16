@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
-use crate::board::{Blocker, Board, Position};
+use crate::board::{
+    Blocker, Board, Position,
+    utils::get_spawn_position
+};
 use crate::states::{GameState, AnimationState};
 use crate::vectors::Vector2Int;
 
@@ -121,7 +124,7 @@ pub fn spawn_npcs(
 ) { 
     let kinds = super::utils::get_npc_set(rank_sum);
     for kind in kinds {
-        let position = super::get_spawn_position(blocker_positions, board);
+        let position = get_spawn_position(blocker_positions, board);
         if position.is_none() { continue; }
 
         blocker_positions.push(position.unwrap());

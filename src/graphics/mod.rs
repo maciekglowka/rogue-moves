@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::states::{AnimationState, GameState};
 
 pub mod board_renderer;
+pub mod item_renderer;
 pub mod sprites;
 pub mod unit_renderer;
 
@@ -10,6 +11,7 @@ pub const TILE_SIZE: f32 = 64.;
 
 pub const MAP_Z: f32 = 0.;
 pub const UNIT_Z: f32 = 10.;
+pub const ITEM_Z: f32 = 5.;
 pub const OVERLAY_Z: f32 = 100.;
 
 pub const UNIT_SPEED: f32 = 20.;
@@ -22,11 +24,13 @@ impl Plugin for GraphicsPlugin {
             SystemSet::on_enter(GameState::LoadAssets)
                 .with_system(board_renderer::load_assets)
                 .with_system(unit_renderer::load_assets)
+                .with_system(item_renderer::load_assets)
         );
         app.add_system_set(
             SystemSet::on_exit(GameState::Spawning)
                 .with_system(board_renderer::draw_board)
                 .with_system(unit_renderer::draw_units)
+                .with_system(item_renderer::draw_items)
         );
         app.add_system_set(
             SystemSet::on_update(AnimationState::Animating)

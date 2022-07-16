@@ -6,6 +6,7 @@ use crate::vectors::Vector2Int;
 use crate::states::{GameState, SetupLabel};
 
 pub mod tile;
+pub mod utils;
 
 pub const SIZE: u8 = 6;
 

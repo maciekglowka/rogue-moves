@@ -64,7 +64,7 @@ pub fn get_unit_rank(kind: &UnitKind) -> u32 {
         UnitKind::Frog => 2,
         UnitKind::Goblin => 2,
         UnitKind::Rat => 3,
-        UnitKind::Cat => 2,
+        UnitKind::Cat => 3,
         UnitKind::Knight => 3,
         UnitKind::Puma => 3,
         UnitKind::Player => 0
