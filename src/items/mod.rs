@@ -26,7 +26,7 @@ impl Plugin for ItemsPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Clone, Component)]
 pub struct Item;
 
 fn spawn_items(

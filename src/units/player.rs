@@ -4,6 +4,7 @@ use crate::board::{
     Blocker, Board, Position,
     utils::get_spawn_position
 };
+use crate::items::Item;
 use crate::ui;
 use crate::states::{AnimationState, GameState};
 use crate::vectors::Vector2Int;
@@ -18,7 +19,8 @@ pub struct Player;
 pub struct PlayerData {
     pub current_behaviour: Behaviour,
     pub captured_behaviour: Option<Behaviour>,
-    pub level: u32
+    pub level: u32,
+    pub items: Vec<Item>
 }
 
 pub fn reset_player_data(
@@ -27,7 +29,8 @@ pub fn reset_player_data(
     commands.insert_resource(PlayerData {
         current_behaviour: super::data::get_unit_behaviour(&UnitKind::Player),
         captured_behaviour: None,
-        level: 0
+        level: 0,
+        items: Vec::new()
     });
 }
 
@@ -83,6 +86,7 @@ pub fn tick(
     player_query: Query<Entity, With<Player>>,
     unit_position: Query<(Entity, &Position), With<Unit>>,
     mut unit_query: Query<&mut Unit>,
+    mut item_query: Query<(Entity, &Item, &Position)>,
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
 ) {
     if game_state.current() != &GameState::PlayerTurn { return; }
@@ -92,13 +96,19 @@ pub fn tick(
     if let Ok((_, position)) = unit_position.get(entity) {
         match super::check_unit_interaction(entity, position, &unit_position) {
             Some(killed) => {
-                let killed_unit = unit_query.get(killed).unwrap();
-                
+                let killed_unit = unit_query.get(killed).unwrap();                
                 player_data.current_behaviour = killed_unit.behaviour.clone();
                 commands.entity(killed).despawn_recursive();
             },
             None => {}
-        };            
+        };   
+        
+        try_pick_item(
+            &mut commands,
+            position,
+            &mut item_query,
+            &mut player_data
+        );
     }
     let mut unit = unit_query.get_mut(entity).unwrap();
     let turn_end = unit.handle_turn_end();
@@ -130,4 +140,18 @@ pub fn spawn_player(
         }
 
     position
+}
+
+fn try_pick_item(
+    mut commands: &mut Commands,
+    player_position: &Position,
+    mut item_query: &mut Query<(Entity, &Item, &Position)>,
+    mut player_data: &mut ResMut<PlayerData>,
+) {
+    for (entity, item, position) in item_query.iter() {
+        if position.v != player_position.v { continue; }
+
+        commands.entity(entity).despawn_recursive();
+        player_data.items.push(item.clone());
+    }
 }
