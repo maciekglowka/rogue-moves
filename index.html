@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <style>
+            body {
+                background-color: #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        </style>
+    </head>
+    <script type="module">
+        import init from './out/moves.js'
+        document.addEventListener('contextmenu', (e) => e.preventDefault())
+        init()
+    </script>
+</html>

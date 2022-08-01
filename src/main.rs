@@ -20,6 +20,9 @@ fn main() {
             ..Default::default()
         }
     );
+    app.insert_resource(
+        ClearColor(Color::BLACK)
+    );
 
     app.add_plugins(DefaultPlugins);
     app.init_resource::<assets::AssetList>();
