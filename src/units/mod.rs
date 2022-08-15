@@ -75,7 +75,9 @@ pub enum UnitKind {
     Hen,
     Frog,
     Bear,
-    Stork
+    Stork,
+    Fox,
+    Wolf
 }
 
 pub enum UnitState {

@@ -1,3 +1,5 @@
+use crate::board;
+
 use super::action::{walk_validator, jump_validator};
 use super::behaviour::{
     Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_ram_pattern,
@@ -48,6 +50,18 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
                 pattern: get_knight_pattern(),
                 validator: jump_validator
             }
+        },       
+        UnitKind::Fox => {
+            Behaviour {
+                pattern: get_diagonal_pattern(board::SIZE),
+                validator: walk_validator
+            }
+        },
+        UnitKind::Wolf => {
+            Behaviour {
+                pattern: get_ortho_pattern(board::SIZE),
+                validator: walk_validator
+            }
         },
         // UnitKind::Puma => {
         //     Behaviour {
@@ -67,7 +81,9 @@ pub fn get_unit_rank(kind: &UnitKind) -> u32 {
         // UnitKind::Cat => 3,
         UnitKind::Stork => 3,
         // UnitKind::Puma => 3,
-        UnitKind::Player => 0
+        UnitKind::Fox => 5,
+        UnitKind::Wolf => 6,
+        UnitKind::Player => 0,
     }
 }
 
@@ -79,6 +95,8 @@ pub fn get_npc_types() -> Vec<UnitKind> {
         UnitKind::Hen,
         // UnitKind::Cat,
         // UnitKind::Puma,
-        UnitKind::Stork
+        UnitKind::Stork,
+        UnitKind::Fox,
+        UnitKind::Wolf
     ]
 }

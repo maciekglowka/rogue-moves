@@ -56,7 +56,7 @@ pub fn load_assets(
     asset_server: Res<AssetServer>,
     mut asset_list: ResMut<crate::assets::AssetList>    
 ) {
-    let handle = asset_server.load("minecraft.ttf");
+    let handle = asset_server.load("pixel.ttf");
     asset_list.0.push(handle.clone_untyped());
 
     commands.insert_resource(

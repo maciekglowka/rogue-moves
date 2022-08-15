@@ -44,7 +44,7 @@ pub fn draw_units(
         let mut sprite = TextureAtlasSprite::new(
             get_sprite_idx(&unit.kind)
         );
-        sprite.custom_size = Some(Vec2::splat(0.75*TILE_SIZE));
+        sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
         // sprite.color = Color::Rgba { red: 0.84, green: 0.85, blue: 0.84, alpha: 1. };
 
         commands.entity(entity)
@@ -110,5 +110,7 @@ fn get_sprite_idx(kind: &UnitKind) -> usize {
         // UnitKind::Cat => 99,
         UnitKind::Stork => 10,
         // UnitKind::Puma => 112
+        UnitKind::Fox => 12,
+        UnitKind::Wolf => 14
     }
 }
