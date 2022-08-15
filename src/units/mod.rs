@@ -2,7 +2,12 @@ use bevy::prelude::*;
 use std::collections::VecDeque;
 
 use crate::states::{AnimationState, GameState, SetupLabel};
-use crate::board::{Blocker, Board, Position};
+use crate::board::{
+    Blocker,
+    Board,
+    Position,
+    tile::{Tile, TileKind}
+};
 
 mod action;
 pub mod behaviour;
@@ -68,26 +73,59 @@ pub enum UnitKind {
     Player,
     Turtle,
     Rat,
-    Frog,
+    // Frog,
     Goblin,
-    Cat,
-    Puma,
+    // Cat,
+    // Puma,
     Knight
+}
+
+pub enum UnitState {
+    Active,
+    Paused
 }
 
 #[derive(Component)]
 pub struct Unit {
     pub ap: u8,
     pub behaviour: behaviour::Behaviour,
-    pub kind: UnitKind
+    pub kind: UnitKind,
+    pub state: UnitState
 }
 
 impl Unit {
-    pub fn handle_turn_end(&mut self) -> bool {   
+    pub fn handle_turn_end(
+            &mut self,
+            tile_query: &Query<(&Position, &Tile)>,
+            position: &Position
+        ) -> bool {   
         self.ap -= 1;
+
+        let tile = tile_query.iter()
+            .filter(|(p, _)| p.v == position.v)
+            .next()
+            .unwrap();
+
+        match tile.1.kind {
+            TileKind::Bush => {
+                self.state = UnitState::Paused;
+                return true
+            },
+            _ => ()
+        };
         
         match self.ap {
             0 => true,
+            _ => false
+        }
+    }
+    pub fn handle_turn_start(&mut self) -> bool {
+        match self.state {
+            UnitState::Active => true,
+            UnitState::Paused => {
+                self.state = UnitState::Active;
+                false
+            },
             _ => false
         }
     }

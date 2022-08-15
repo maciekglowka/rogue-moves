@@ -41,8 +41,8 @@ pub fn draw_board(
         let uv = match tile.kind {
             TileKind::Floor => (0, 0),
             TileKind::Wall => (1, 0),
-            // TileKind::StairDown => (2, 0),
-            // TileKind::StairUp => (3, 0),
+            TileKind::Stair => (2, 0),
+            TileKind::Bush => (3, 0),
         };
 
         uvs.extend(super::sprites::atlas_uvs(uv.0, uv.1, 4));

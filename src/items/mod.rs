@@ -14,10 +14,10 @@ impl Plugin for ItemsPlugin {
             SystemSet::on_exit(GameState::GameOver)
                 .with_system(clear_items)
         );
-        app.add_system_set(
-            SystemSet::on_enter(GameState::Spawning)
-                .with_system(spawn_items)
-        );
+        // app.add_system_set(
+        //     SystemSet::on_enter(GameState::Spawning)
+        //         .with_system(spawn_items)
+        // );
         app.add_system_set(
             SystemSet::on_enter(GameState::MapGenerate)
                 .with_system(clear_items)

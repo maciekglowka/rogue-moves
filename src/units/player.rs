@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::board::{
     Blocker, Board, Position,
-    utils::get_spawn_position
+    utils::get_spawn_position,
+    tile::Tile
 };
 use crate::items::Item;
 use crate::ui;
@@ -18,7 +19,7 @@ pub struct Player;
 
 pub struct PlayerData {
     pub current_behaviour: Behaviour,
-    pub captured_behaviour: Option<Behaviour>,
+    // pub captured_behaviour: Option<Behaviour>,
     pub level: u32,
     pub items: Vec<Item>
 }
@@ -28,7 +29,7 @@ pub fn reset_player_data(
 ) {
     commands.insert_resource(PlayerData {
         current_behaviour: super::data::get_unit_behaviour(&UnitKind::Player),
-        captured_behaviour: None,
+        // captured_behaviour: None,
         level: 0,
         items: Vec::new()
     });
@@ -40,9 +41,15 @@ pub fn start_player_turn(
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
     mut player_query: Query<(Entity, &mut Unit), With<Player>>,
     mut game_state: ResMut<State<GameState>>,
+    mut player_data: ResMut<PlayerData>,
 ) {
     if let Ok((_entity, mut unit)) = player_query.get_single_mut() {
-        unit.ap = 2;
+        if !unit.handle_turn_start() { 
+            game_state.set(GameState::NPCTurn);
+            return;
+        };
+        unit.ap = 1;
+        player_data.current_behaviour = super::data::get_unit_behaviour(&UnitKind::Player);
         ev_ui.send(ui::cursor::DrawCursorEvent);
     } else {
         game_state.set(GameState::GameOver);
@@ -53,7 +60,7 @@ pub fn move_player(
     mut ev: EventReader<MovePlayerEvent>,
     mut query: Query<(Entity, &mut Position), With<Player>>,
     mut animation_state: ResMut<State<AnimationState>>,
-    mut game_state: ResMut<State<GameState>>,
+    // mut game_state: ResMut<State<GameState>>,
     blocker_query: Query<(&Position, &Blocker), Without<Player>>,
     board_query: Query<&Board>,
     player_data: Res<PlayerData>,
@@ -63,11 +70,13 @@ pub fn move_player(
         if let Ok((_, mut position)) = query.get_single_mut() {
             let board = board_query.get_single().unwrap();
             
-            let range = player_data.current_behaviour.possible_positions(
+            let mut range = player_data.current_behaviour.possible_positions(
                 position.v, 
                 board,
                 &blocker_query.iter().collect()
             );
+
+            // range.push(position.v);
 
             if !range.contains(&ev.0) {
                 continue;
@@ -83,35 +92,39 @@ pub fn tick(
     mut commands: Commands,
     mut game_state: ResMut<State<GameState>>,
     mut player_data: ResMut<PlayerData>,
-    player_query: Query<Entity, With<Player>>,
+    mut player_query: Query<(Entity, &mut Unit), With<Player>>,
     unit_position: Query<(Entity, &Position), With<Unit>>,
-    mut unit_query: Query<&mut Unit>,
+    mut unit_query: Query<&mut Unit, Without<Player>>,
     mut item_query: Query<(Entity, &Item, &Position)>,
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
+    tile_query: Query<(&Position, &Tile)>
 ) {
     if game_state.current() != &GameState::PlayerTurn { return; }
 
-    let entity = player_query.get_single().unwrap();
+    let (entity, mut unit) = player_query.get_single_mut().unwrap();
+    let position = unit_position.get(entity).unwrap().1;
 
-    if let Ok((_, position)) = unit_position.get(entity) {
-        match super::check_unit_interaction(entity, position, &unit_position) {
-            Some(killed) => {
-                let killed_unit = unit_query.get(killed).unwrap();                
-                player_data.current_behaviour = killed_unit.behaviour.clone();
-                commands.entity(killed).despawn_recursive();
-            },
-            None => {}
-        };   
-        
-        try_pick_item(
-            &mut commands,
-            position,
-            &mut item_query,
-            &mut player_data
-        );
-    }
-    let mut unit = unit_query.get_mut(entity).unwrap();
-    let turn_end = unit.handle_turn_end();
+    match super::check_unit_interaction(entity, position, &unit_position) {
+        Some(killed) => {
+            let killed_unit = unit_query.get(killed).unwrap();                
+            player_data.current_behaviour = killed_unit.behaviour.clone();
+            unit.ap += 1;
+            commands.entity(killed).despawn_recursive();
+        },
+        None => {}
+    };   
+    
+    try_pick_item(
+        &mut commands,
+        position,
+        &mut item_query,
+        &mut player_data
+    );
+
+    let turn_end = unit.handle_turn_end(
+        &tile_query,
+        &position
+    );
 
     if turn_end {
         game_state.set(GameState::NPCTurn);
@@ -135,7 +148,8 @@ pub fn spawn_player(
             .insert(Unit { 
                 ap: 2,
                 behaviour: behaviour,
-                kind: super::UnitKind::Player
+                kind: super::UnitKind::Player,
+                state: super::UnitState::Active
             });
         }
 

@@ -51,14 +51,25 @@ pub fn generate_board(
 ) {
     let mut rng = rand::thread_rng();
     let mut tiles = HashMap::new();
+    let stair_v = Vector2Int::new(rng.gen_range(0..SIZE) as i32, rng.gen_range(0..SIZE) as i32);
+
     for y in 0..SIZE {
         for x in 0..SIZE {
             let v = Vector2Int::new(x as i32, y as i32);
 
-            let kind = match rng.gen_range(0.0..1.0) {
-                a if a < 0.05 => tile::TileKind::Wall,
+            let mut kind = match rng.gen_range(0.0..1.0) {
+                a if a < 0.075 => {
+                    match rng.gen_range(0.0..1.0) {
+                        b if b < 0.5 => tile::TileKind::Wall,
+                        _ => tile::TileKind::Bush
+                    }
+                },
                 _ => tile::TileKind::Floor
             };
+
+            if v == stair_v {
+                kind = tile::TileKind::Stair;
+            }
 
             let is_blocker = match kind {
                 tile::TileKind::Wall => true,

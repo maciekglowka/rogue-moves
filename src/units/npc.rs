@@ -3,7 +3,8 @@ use std::collections::VecDeque;
 
 use crate::board::{
     Blocker, Board, Position,
-    utils::get_spawn_position
+    utils::get_spawn_position,
+    tile::Tile
 };
 use crate::states::{GameState, AnimationState};
 use crate::vectors::Vector2Int;
@@ -27,23 +28,26 @@ pub fn tick(
     mut game_state: ResMut<State<GameState>>,
     mut npc_queue: ResMut<NPCQueue>,
     unit_position: Query<(Entity, &Position), With<Unit>>,
-    mut unit_query: Query<&mut Unit>
+    mut unit_query: Query<&mut Unit>,
+    tile_query: Query<(&Position, &Tile)>
 ) {
     if game_state.current() != &GameState::NPCTurn { return; }
 
     if let Some(entity) = npc_queue.current {
+        let position = unit_position.get(entity).unwrap().1;
 
-        if let Ok((_, position)) = unit_position.get(entity) {
-            if let Some(killed) = super::check_unit_interaction(
-                entity,
-                position, 
-                &unit_position) {
-                    commands.entity(killed).despawn_recursive();
-                };
-        }
+        if let Some(killed) = super::check_unit_interaction(
+            entity,
+            position, 
+            &unit_position) {
+                commands.entity(killed).despawn_recursive();
+            };
 
         let mut unit = unit_query.get_mut(entity).unwrap();
-        let turn_end = unit.handle_turn_end();
+        let turn_end = unit.handle_turn_end(
+            &tile_query,
+            position,
+        );
         npc_queue.current = None;
     }
 }
@@ -66,6 +70,10 @@ pub fn move_npc(
             return;
         }
     };
+
+    if let Ok((_, mut unit, _)) = npc_query.get_mut(entity) {
+        if !unit.handle_turn_start() { return; }
+    }
 
     let (player_position, player_blocker) = match player_query.get_single() {
         Ok(r) => r,
@@ -136,7 +144,8 @@ pub fn spawn_npcs(
             .insert(Unit { 
                 ap: BASE_AP,
                 behaviour: get_unit_behaviour(&kind),
-                kind: kind
+                kind: kind,
+                state: super::UnitState::Active
             });
     }
 }
@@ -158,16 +167,17 @@ fn get_best_move(
 
     let mut rated = Vec::new();
     for v in positions {
-        let mut rank = match v.dist(player_position.v) {
-            d if d >=2. || d < 1. => d,
-            _ => 5.
-        };
+        // let mut rank = match v.dist(player_position.v) {
+        //     d if d >=2. || d < 1. => d,
+        //     _ => 5.
+        // };
+        let mut rank = v.dist(player_position.v);
         if npc_positions.iter().any(|p| p.v == v) {
-            rank += 5.;
+            rank += 50.;
         }
         rated.push((rank, v));
     }
     
-    rated.sort_by_key(|a| a.0 as u8);
+    rated.sort_by_key(|a| (100. * a.0) as u8);
     Some(rated[0].1)
 }

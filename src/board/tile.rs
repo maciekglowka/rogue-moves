@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 pub enum TileKind {
     Floor,
-    Wall
+    Wall,
+    Stair,
+    Bush
 }
 
 #[derive(Component)]

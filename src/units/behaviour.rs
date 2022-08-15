@@ -54,6 +54,14 @@ pub fn get_omni_pattern(range: u8) -> Vec::<Vector2Int> {
     ranged_positions(&dirs, range)
 }
 
+pub fn get_player_pattern() -> Vec::<Vector2Int> {
+    vec![
+        Vector2Int::new(0, 1), Vector2Int::new(0, -1),
+        Vector2Int::new(1, 0), Vector2Int::new(-1, 0),
+        Vector2Int::new(0, 2)
+    ]
+}
+
 pub fn get_knight_pattern() -> Vec::<Vector2Int> {
     vec![
         Vector2Int::new(2, 1), Vector2Int::new(1, 2),
@@ -67,7 +75,7 @@ pub fn get_turtle_pattern() -> Vec::<Vector2Int> {
     vec![
         Vector2Int::new(0, 1), Vector2Int::new(0, -1),
         Vector2Int::new(1, 0), Vector2Int::new(-1, 0),
-        Vector2Int::new(0, 2)
+        Vector2Int::new(0, -2)
     ]
 }
 
