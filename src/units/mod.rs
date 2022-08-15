@@ -71,13 +71,11 @@ impl Plugin for UnitsPlugin {
 #[derive(Clone, Copy, Debug)]
 pub enum UnitKind {
     Player,
-    Turtle,
-    Rat,
-    // Frog,
-    Goblin,
-    // Cat,
-    // Puma,
-    Knight
+    Ram,
+    Hen,
+    Frog,
+    Bear,
+    Stork
 }
 
 pub enum UnitState {

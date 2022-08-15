@@ -139,21 +139,22 @@ pub fn spawn_player(
     blocker_positions: &Vec<Vector2Int>
 ) -> Option<Vector2Int> {
     let behaviour = get_unit_behaviour(&UnitKind::Player);
-    let position = get_spawn_position(blocker_positions, board);
-    if position.is_some() {
-        commands.spawn()
-            .insert(Position { v: position.unwrap() })
-            .insert(Player)
-            .insert(Blocker { is_targetable: true })
-            .insert(Unit { 
-                ap: 2,
-                behaviour: behaviour,
-                kind: super::UnitKind::Player,
-                state: super::UnitState::Active
-            });
-        }
+    // let position = get_spawn_position(blocker_positions, board);
+    let position = board.stair_v;
+    // if position.is_some() {
+    commands.spawn()
+        .insert(Position { v: position })
+        .insert(Player)
+        .insert(Blocker { is_targetable: true })
+        .insert(Unit { 
+            ap: 2,
+            behaviour: behaviour,
+            kind: super::UnitKind::Player,
+            state: super::UnitState::Active
+        });
+        // }
 
-    position
+    Some(position)
 }
 
 fn try_pick_item(

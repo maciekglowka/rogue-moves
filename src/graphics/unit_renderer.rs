@@ -85,15 +85,16 @@ pub fn load_assets(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut asset_list: ResMut<crate::assets::AssetList> 
 ) {
-    let image_handle = asset_server.load("ascii.png");
+    let image_handle = asset_server.load("units.png");
     asset_list.0.push(image_handle.clone_untyped());
 
-    let atlas = TextureAtlas::from_grid_with_padding(
-        image_handle,
-        Vec2::splat(9.0),
-        16, 16,
-        Vec2::splat(2.0)
-    );
+    // let atlas = TextureAtlas::from_grid_with_padding(
+    //     image_handle,
+    //     Vec2::splat(9.0),
+    //     16, 16,
+    //     Vec2::splat(2.0)
+    // );
+    let atlas = TextureAtlas::from_grid(image_handle, Vec2::splat(16.0), 2, 8);
 
     let atlas_handle = texture_atlases.add(atlas);
     commands.insert_resource(UnitSprites(atlas_handle));
@@ -101,13 +102,13 @@ pub fn load_assets(
 
 fn get_sprite_idx(kind: &UnitKind) -> usize {
     match kind {
-        UnitKind::Player => 1,
-        UnitKind::Turtle => 116,
-        // UnitKind::Frog => 102,
-        UnitKind::Rat => 114,
-        UnitKind::Goblin => 103,
+        UnitKind::Player => 0,
+        UnitKind::Ram => 2,
+        UnitKind::Frog => 6,
+        UnitKind::Hen => 4,
+        UnitKind::Bear => 8,
         // UnitKind::Cat => 99,
-        UnitKind::Knight => 107,
+        UnitKind::Stork => 10,
         // UnitKind::Puma => 112
     }
 }

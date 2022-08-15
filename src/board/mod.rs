@@ -43,7 +43,8 @@ impl Plugin for BoardPlugin {
 
 #[derive(Component)]
 pub struct Board {
-    pub tiles: HashMap<Vector2Int, Entity>
+    pub tiles: HashMap<Vector2Int, Entity>,
+    pub stair_v: Vector2Int
 }
 
 pub fn generate_board(
@@ -51,7 +52,7 @@ pub fn generate_board(
 ) {
     let mut rng = rand::thread_rng();
     let mut tiles = HashMap::new();
-    let stair_v = Vector2Int::new(rng.gen_range(0..SIZE) as i32, rng.gen_range(0..SIZE) as i32);
+    let stair_v = Vector2Int::new(rng.gen_range(0..SIZE) as i32, rng.gen_range(0..SIZE/2) as i32);
 
     for y in 0..SIZE {
         for x in 0..SIZE {
@@ -92,7 +93,7 @@ pub fn generate_board(
 
     let tile_vec: Vec<Entity> = tiles.to_owned().into_values().collect();
     commands.spawn()
-        .insert(Board {tiles})
+        .insert(Board {tiles, stair_v})
         .push_children(&tile_vec);
 }
 

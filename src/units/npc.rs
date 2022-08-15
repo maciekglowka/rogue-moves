@@ -178,6 +178,6 @@ fn get_best_move(
         rated.push((rank, v));
     }
     
-    rated.sort_by_key(|a| (100. * a.0) as u8);
+    rated.sort_by_key(|a| (100. * a.0) as u32);
     Some(rated[0].1)
 }

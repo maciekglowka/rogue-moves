@@ -1,7 +1,7 @@
 use super::action::{walk_validator, jump_validator};
 use super::behaviour::{
-    Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_turtle_pattern, get_frog_pattern,
-    get_cat_pattern, get_puma_pattern, get_rat_pattern, get_player_pattern
+    Behaviour, get_omni_pattern, get_ortho_pattern, get_knight_pattern, get_ram_pattern,
+    get_player_pattern, get_diagonal_pattern
 };
 use super::{UnitKind, Unit};
 
@@ -13,25 +13,25 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
                 validator: walk_validator
             }
         },
-        UnitKind::Turtle => {
+        UnitKind::Ram => {
             Behaviour {
-                pattern: get_turtle_pattern(),
+                pattern: get_ram_pattern(),
                 validator: walk_validator
             }
         },
-        // UnitKind::Frog => {
-        //     Behaviour {
-        //         pattern: get_frog_pattern(),
-        //         validator: jump_validator
-        //     }
-        // },
-        UnitKind::Goblin => {
+        UnitKind::Frog => {
+            Behaviour {
+                pattern: get_diagonal_pattern(1),
+                validator: jump_validator
+            }
+        },
+        UnitKind::Bear => {
             Behaviour {
                 pattern: get_ortho_pattern(2),
                 validator: walk_validator
             }
         },
-        UnitKind::Rat => {
+        UnitKind::Hen => {
             Behaviour {
                 pattern: get_ortho_pattern(1),
                 validator: walk_validator
@@ -43,7 +43,7 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
         //         validator: jump_validator
         //     }
         // },
-        UnitKind::Knight => {
+        UnitKind::Stork => {
             Behaviour {
                 pattern: get_knight_pattern(),
                 validator: jump_validator
@@ -60,12 +60,12 @@ pub fn get_unit_behaviour(kind: &UnitKind) -> Behaviour {
 
 pub fn get_unit_rank(kind: &UnitKind) -> u32 {
     match kind {
-        UnitKind::Turtle => 2,
-        // UnitKind::Frog => 2,
-        UnitKind::Goblin => 3,
-        UnitKind::Rat => 1,
+        UnitKind::Ram => 2,
+        UnitKind::Frog => 2,
+        UnitKind::Bear => 3,
+        UnitKind::Hen => 1,
         // UnitKind::Cat => 3,
-        UnitKind::Knight => 3,
+        UnitKind::Stork => 3,
         // UnitKind::Puma => 3,
         UnitKind::Player => 0
     }
@@ -73,12 +73,12 @@ pub fn get_unit_rank(kind: &UnitKind) -> u32 {
 
 pub fn get_npc_types() -> Vec<UnitKind> {
     vec![
-        UnitKind::Turtle,
-        // UnitKind::Frog,
-        UnitKind::Goblin,
-        UnitKind::Rat,
+        UnitKind::Ram,
+        UnitKind::Frog,
+        UnitKind::Bear,
+        UnitKind::Hen,
         // UnitKind::Cat,
         // UnitKind::Puma,
-        UnitKind::Knight
+        UnitKind::Stork
     ]
 }
