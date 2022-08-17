@@ -50,7 +50,8 @@ pub fn load_assets(
         image_handle,
         Vec2::splat(9.0),
         16, 16,
-        Vec2::splat(2.0)
+        Vec2::splat(2.0),
+        Vec2::ZERO
     );
 
     let atlas_handle = texture_atlases.add(atlas);

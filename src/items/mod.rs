@@ -4,7 +4,7 @@ use crate::board::{
     Blocker, Board, Position,
     utils::get_spawn_position
 };
-use crate::states::{GameState, SetupLabel};
+use crate::states::GameState;
 
 pub struct ItemsPlugin;
 
@@ -15,13 +15,12 @@ impl Plugin for ItemsPlugin {
                 .with_system(clear_items)
         );
         // app.add_system_set(
-        //     SystemSet::on_enter(GameState::Spawning)
+        //     SystemSet::on_exit(GameState::MapGenerate)
         //         .with_system(spawn_items)
         // );
         app.add_system_set(
             SystemSet::on_enter(GameState::MapGenerate)
                 .with_system(clear_items)
-                .label(SetupLabel::CleanUp)
         );
     }
 }

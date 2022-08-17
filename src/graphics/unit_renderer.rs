@@ -45,7 +45,6 @@ pub fn draw_units(
             get_sprite_idx(&unit.kind)
         );
         sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
-        // sprite.color = Color::Rgba { red: 0.84, green: 0.85, blue: 0.84, alpha: 1. };
 
         commands.entity(entity)
             .insert(UnitRenderer)

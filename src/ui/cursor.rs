@@ -69,7 +69,9 @@ pub fn draw_cursor(
         commands.spawn_bundle(sprite::MaterialMesh2dBundle {
             mesh: sprite::Mesh2dHandle(meshes.add(mesh)),
             material: assets.material.clone(),
-            transform: Transform::default().with_scale(Vec3::new(TILE_SIZE, TILE_SIZE, 0.0)),
+            transform: Transform::default()
+                .with_scale(Vec3::new(TILE_SIZE, TILE_SIZE, 0.0))
+                .with_translation(Vec3::new(0., 0., OVERLAY_Z)),
             ..Default::default()
         })
         .insert(Cursor);
@@ -125,10 +127,10 @@ fn create_cursor_mesh(
     let mut idx = 0;
 
     for position in positions.iter() {
-        verts.push([position.x as f32, position.y as f32, OVERLAY_Z]);
-        verts.push([position.x as f32, position.y as f32 + 1.0, OVERLAY_Z]);
-        verts.push([position.x as f32 + 1.0, position.y as f32 + 1.0, OVERLAY_Z]);
-        verts.push([position.x as f32 + 1.0, position.y as f32, OVERLAY_Z]);
+        verts.push([position.x as f32, position.y as f32, 0.]);
+        verts.push([position.x as f32, position.y as f32 + 1.0, 0.]);
+        verts.push([position.x as f32 + 1.0, position.y as f32 + 1.0, 0.]);
+        verts.push([position.x as f32 + 1.0, position.y as f32, 0.]);
 
         for _ in 0..4 {
             normals.push([0.0, 1.0, 0.0]);

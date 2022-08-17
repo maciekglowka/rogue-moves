@@ -44,22 +44,19 @@ pub fn draw_status(
             .spawn_bundle(TextBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    position: Rect {
+                    position: UiRect {
                         bottom: Val::Px(20.),
                         left: Val::Px(20.),
                         ..Default::default()
                     },
                     ..Default::default()
                 },
-                text: Text::with_section(
+                text: Text::from_section(
                     s,
                     TextStyle {
                         color: color,
                         font: assets.font.clone(),
                         font_size: 24.,
-                        ..Default::default()
-                    },
-                    TextAlignment { 
                         ..Default::default()
                     }
                 ),

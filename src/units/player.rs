@@ -40,17 +40,24 @@ pub struct MovePlayerEvent(pub Vector2Int);
 pub fn start_player_turn(
     mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
     mut player_query: Query<(Entity, &mut Unit), With<Player>>,
-    mut game_state: ResMut<State<GameState>>,
     mut player_data: ResMut<PlayerData>,
 ) {
     if let Ok((_entity, mut unit)) = player_query.get_single_mut() {
-        if !unit.handle_turn_start() { 
-            game_state.set(GameState::NPCTurn);
-            return;
-        };
-        unit.ap = 1;
+        unit.handle_turn_start();
+
         player_data.current_behaviour = super::data::get_unit_behaviour(&UnitKind::Player);
-        ev_ui.send(ui::cursor::DrawCursorEvent);
+        if unit.ap > 0 {ev_ui.send(ui::cursor::DrawCursorEvent);}
+    }
+}
+
+pub fn player_status(
+    mut game_state: ResMut<State<GameState>>,
+    player_query: Query<&Unit, With<Player>>
+) {
+    if let Ok(unit) = player_query.get_single() {
+        if unit.ap == 0 {
+            game_state.set(GameState::NPCTurn);
+        }
     } else {
         game_state.set(GameState::GameOver);
     }
@@ -121,16 +128,17 @@ pub fn tick(
         &mut player_data
     );
 
-    let turn_end = unit.handle_turn_end(
+    unit.handle_turn_end(
         &tile_query,
         &position
     );
 
-    if turn_end {
-        game_state.set(GameState::NPCTurn);
-    } else {
-        ev_ui.send(ui::cursor::DrawCursorEvent);
-    }
+    // if turn_end {
+    //     game_state.set(GameState::NPCTurn);
+    // } else {
+    //     ev_ui.send(ui::cursor::DrawCursorEvent);
+    // }
+    if unit.ap > 0 {ev_ui.send(ui::cursor::DrawCursorEvent); }
 }
 
 pub fn spawn_player(
@@ -147,7 +155,7 @@ pub fn spawn_player(
         .insert(Player)
         .insert(Blocker { is_targetable: true })
         .insert(Unit { 
-            ap: 2,
+            ap: super::BASE_AP,
             behaviour: behaviour,
             kind: super::UnitKind::Player,
             state: super::UnitState::Active

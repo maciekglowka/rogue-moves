@@ -13,8 +13,6 @@ use super::data::get_unit_behaviour;
 use super::player::{Player, self};
 use super::Unit;
 
-const BASE_AP: u8 = 1;
-
 pub struct NPCQueue {
     pub npcs: VecDeque<Entity>,
     pub current: Option<Entity>
@@ -72,7 +70,8 @@ pub fn move_npc(
     };
 
     if let Ok((_, mut unit, _)) = npc_query.get_mut(entity) {
-        if !unit.handle_turn_start() { return; }
+        unit.handle_turn_start();
+        if unit.ap == 0 { return; }
     }
 
     let (player_position, player_blocker) = match player_query.get_single() {
@@ -101,14 +100,13 @@ pub fn move_npc(
         );
     }
    
-    if let Ok((mut position, mut unit, _)) = npc_query.get_mut(entity) {  
+    if let Ok((mut position, _, _)) = npc_query.get_mut(entity) {  
         match new_position_v {
             Some(v) => {
                 position.v = v;
             }
             _ => ()
-        }    
-        unit.ap = BASE_AP;
+        }
         npc_queue.current = Some(entity);
     }
 
@@ -142,7 +140,7 @@ pub fn spawn_npcs(
             .insert(NPC)
             .insert(Blocker { is_targetable: true })
             .insert(Unit { 
-                ap: BASE_AP,
+                ap: super::BASE_AP,
                 behaviour: get_unit_behaviour(&kind),
                 kind: kind,
                 state: super::UnitState::Active

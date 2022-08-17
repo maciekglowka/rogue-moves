@@ -3,7 +3,7 @@ use rand::Rng;
 use std::collections::HashMap;
 
 use crate::vectors::Vector2Int;
-use crate::states::{GameState, SetupLabel};
+use crate::states::GameState;
 
 pub mod tile;
 pub mod utils;
@@ -27,12 +27,10 @@ impl Plugin for BoardPlugin {
         app.add_system_set(
             SystemSet::on_enter(GameState::MapGenerate)
                 .with_system(clear_board)
-                .label(SetupLabel::CleanUp)
         );
         app.add_system_set(
-            SystemSet::on_enter(GameState::MapGenerate)
+            SystemSet::on_update(GameState::MapGenerate)
                 .with_system(generate_board)
-                .after(SetupLabel::CleanUp)
         );
         app.add_system_set(
             SystemSet::on_exit(GameState::GameOver)
@@ -48,7 +46,8 @@ pub struct Board {
 }
 
 pub fn generate_board(
-    mut commands: Commands
+    mut commands: Commands,
+    mut game_state: ResMut<State<GameState>>,
 ) {
     let mut rng = rand::thread_rng();
     let mut tiles = HashMap::new();
@@ -95,6 +94,8 @@ pub fn generate_board(
     commands.spawn()
         .insert(Board {tiles, stair_v})
         .push_children(&tile_vec);
+
+    game_state.set(GameState::Spawning);
 }
 
 fn clear_board(
@@ -104,8 +105,5 @@ fn clear_board(
 ) {
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
-    }
-    if game_state.current() == &GameState::MapGenerate {
-        game_state.set(GameState::Spawning);
     }
 }

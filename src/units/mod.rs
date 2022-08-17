@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
-use crate::states::{AnimationState, GameState, SetupLabel};
+use crate::states::{AnimationState, GameState};
 use crate::board::{
     Blocker,
     Board,
@@ -16,6 +16,8 @@ pub mod npc;
 pub mod player;
 mod utils;
 
+const BASE_AP: u8 = 1;
+
 pub struct UnitsPlugin;
 
 impl Plugin for UnitsPlugin {
@@ -27,13 +29,12 @@ impl Plugin for UnitsPlugin {
                 .with_system(clear_units)
         );
         app.add_system_set(
-            SystemSet::on_enter(GameState::Spawning)
+            SystemSet::on_update(GameState::Spawning)
                 .with_system(spawn_units)
         );
         app.add_system_set(
             SystemSet::on_enter(GameState::MapGenerate)
                 .with_system(clear_units)
-                .label(SetupLabel::CleanUp)
         );
 
         app.add_event::<player::MovePlayerEvent>();
@@ -45,6 +46,7 @@ impl Plugin for UnitsPlugin {
         app.add_system_set(
             SystemSet::on_update(GameState::PlayerTurn)
                 .with_system(player::move_player)
+                .with_system(player::player_status)
         );
 
         app.add_system_set(
@@ -98,7 +100,7 @@ impl Unit {
             &mut self,
             tile_query: &Query<(&Position, &Tile)>,
             position: &Position
-        ) -> bool {   
+        ) {   
         self.ap -= 1;
 
         let tile = tile_query.iter()
@@ -109,25 +111,19 @@ impl Unit {
         match tile.1.kind {
             TileKind::Bush => {
                 self.state = UnitState::Paused;
-                return true
+                self.ap = 0;
             },
             _ => ()
         };
-        
-        match self.ap {
-            0 => true,
-            _ => false
-        }
     }
-    pub fn handle_turn_start(&mut self) -> bool {
+    pub fn handle_turn_start(&mut self) {
         match self.state {
-            UnitState::Active => true,
+            UnitState::Active => self.ap = BASE_AP,
             UnitState::Paused => {
                 self.state = UnitState::Active;
-                false
-            },
-            _ => false
-        }
+                self.ap = 0
+            }
+        };
     }
 }
 

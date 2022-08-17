@@ -16,9 +16,3 @@ pub enum AnimationState {
     Idle,
     Animating
 }
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[derive(SystemLabel)]
-pub enum SetupLabel {
-    CleanUp
-}

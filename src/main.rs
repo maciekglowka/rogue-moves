@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy::render::texture::ImageSettings;
+use bevy_inspector_egui::WorldInspectorPlugin;
 
 mod assets;
 mod board;
@@ -23,8 +25,10 @@ fn main() {
     app.insert_resource(
         ClearColor(Color::BLACK)
     );
+    app.insert_resource(ImageSettings::default_nearest());
 
     app.add_plugins(DefaultPlugins);
+    // app.add_plugin(WorldInspectorPlugin::new());
     app.init_resource::<assets::AssetList>();
 
     app.add_state(states::GameState::LoadAssets);
