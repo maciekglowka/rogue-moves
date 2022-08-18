@@ -19,7 +19,6 @@ pub struct Player;
 
 pub struct PlayerData {
     pub current_behaviour: Behaviour,
-    // pub captured_behaviour: Option<Behaviour>,
     pub level: u32,
     pub items: Vec<Item>
 }
@@ -29,7 +28,6 @@ pub fn reset_player_data(
 ) {
     commands.insert_resource(PlayerData {
         current_behaviour: super::data::get_unit_behaviour(&UnitKind::Player),
-        // captured_behaviour: None,
         level: 0,
         items: Vec::new()
     });
@@ -38,7 +36,7 @@ pub fn reset_player_data(
 pub struct MovePlayerEvent(pub Vector2Int);
 
 pub fn start_player_turn(
-    mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
+    mut ev_ui: EventWriter<ui::RedrawUIEvent>,
     mut player_query: Query<(Entity, &mut Unit), With<Player>>,
     mut player_data: ResMut<PlayerData>,
 ) {
@@ -46,7 +44,7 @@ pub fn start_player_turn(
         unit.handle_turn_start();
 
         player_data.current_behaviour = super::data::get_unit_behaviour(&UnitKind::Player);
-        if unit.ap > 0 {ev_ui.send(ui::cursor::DrawCursorEvent);}
+        if unit.ap > 0 {ev_ui.send(ui::RedrawUIEvent);}
     }
 }
 
@@ -103,7 +101,7 @@ pub fn tick(
     unit_position: Query<(Entity, &Position), With<Unit>>,
     mut unit_query: Query<&mut Unit, Without<Player>>,
     mut item_query: Query<(Entity, &Item, &Position)>,
-    mut ev_ui: EventWriter<ui::cursor::DrawCursorEvent>,
+    mut ev_ui: EventWriter<ui::RedrawUIEvent>,
     tile_query: Query<(&Position, &Tile)>
 ) {
     if game_state.current() != &GameState::PlayerTurn { return; }
@@ -121,7 +119,7 @@ pub fn tick(
         None => {}
     };   
     
-    try_pick_item(
+    let item_picked = try_pick_item(
         &mut commands,
         position,
         &mut item_query,
@@ -133,23 +131,16 @@ pub fn tick(
         &position
     );
 
-    // if turn_end {
-    //     game_state.set(GameState::NPCTurn);
-    // } else {
-    //     ev_ui.send(ui::cursor::DrawCursorEvent);
-    // }
-    if unit.ap > 0 {ev_ui.send(ui::cursor::DrawCursorEvent); }
+    // if unit.ap > 0 || item_picked {ev_ui.send(ui::RedrawUIEvent); }
+    ev_ui.send(ui::RedrawUIEvent);
 }
 
 pub fn spawn_player(
     mut commands: &mut Commands,
     board: &Board,
-    blocker_positions: &Vec<Vector2Int>
 ) -> Option<Vector2Int> {
     let behaviour = get_unit_behaviour(&UnitKind::Player);
-    // let position = get_spawn_position(blocker_positions, board);
     let position = board.stair_v;
-    // if position.is_some() {
     commands.spawn()
         .insert(Position { v: position })
         .insert(Player)
@@ -160,21 +151,23 @@ pub fn spawn_player(
             kind: super::UnitKind::Player,
             state: super::UnitState::Active
         });
-        // }
 
     Some(position)
 }
 
-fn try_pick_item(
+fn try_pick_item (
     mut commands: &mut Commands,
     player_position: &Position,
     mut item_query: &mut Query<(Entity, &Item, &Position)>,
     mut player_data: &mut ResMut<PlayerData>,
-) {
+) -> bool {
+    let mut changed = false;
     for (entity, item, position) in item_query.iter() {
         if position.v != player_position.v { continue; }
 
         commands.entity(entity).despawn_recursive();
         player_data.items.push(item.clone());
+        changed = true;
     }
+    changed
 }

@@ -32,7 +32,7 @@ pub fn draw_status(
     player_query: Query<&Unit, With<Player>>,
     player_data: Res<PlayerData>,
     assets: Res<super::FontAssets>,
-    mut ev_draw_cursor: EventReader<super::cursor::DrawCursorEvent>,
+    mut ev_draw_cursor: EventReader<super::RedrawUIEvent>,
 ) {
     for _ in ev_draw_cursor.iter() {
         destroy_status(&mut commands, &status_query);

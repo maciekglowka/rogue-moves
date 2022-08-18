@@ -14,17 +14,15 @@ pub struct Cursor;
 
 pub struct CursorAssets {
     material: Handle<ColorMaterial>,
-    pub npc: Option<Entity>
 }
-
-pub struct DrawCursorEvent;
 
 pub fn draw_cursor(
     mut commands: Commands,
-    mut ev_draw_cursor: EventReader<DrawCursorEvent>,
+    mut ev_draw_cursor: EventReader<super::RedrawUIEvent>,
     cursor_query: Query<Entity, With<Cursor>>,
     mut meshes: ResMut<Assets<Mesh>>,
     assets: Res<CursorAssets>,
+    input_assets: Res<super::input::InputAssets>,
     blocker_query: Query<(&Position, &Blocker), Without<Unit>>,
     unit_query: Query<(&Unit, &Position, &Blocker)>,
     player_query: Query<Entity, With<Player>>,
@@ -34,14 +32,22 @@ pub fn draw_cursor(
     for _ in ev_draw_cursor.iter() {
         destroy_cursor(&mut commands, &cursor_query);
 
-        let entity = match assets.npc {
+        let player_entity = match player_query.get_single() {
+            Ok(e) => e,
+            _ => return
+        };
+        if let Ok((player_unit, _, _)) = unit_query.get(player_entity) {
+            if player_unit.ap == 0 { return; }
+        }
+
+        let entity = match input_assets.selected_npc {
             Some(e) => e,
             None => {
-                if let Ok(e) = player_query.get_single() { e } else { return; }
+                player_entity
             }
         };
 
-        let behaviour = match assets.npc {
+        let behaviour = match input_assets.selected_npc {
             Some(e) => {
                 if let Ok((u, _, _)) = unit_query.get(e) { &u.behaviour } else { return; }
             },
@@ -111,7 +117,6 @@ pub fn load_assets(
     commands.insert_resource(
         CursorAssets { 
             material: material_handle,
-            npc: None
         }
     );
 }

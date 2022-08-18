@@ -4,23 +4,33 @@ use crate::board::{
     Blocker, Board, Position,
     utils::get_spawn_position
 };
+use crate::units::{
+    player::{Player, PlayerData},
+    Unit
+};
+use crate::ui::RedrawUIEvent;
 use crate::states::GameState;
 
 pub struct ItemsPlugin;
 
 impl Plugin for ItemsPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<UseItemEvent>();
         app.add_system_set(
             SystemSet::on_exit(GameState::GameOver)
                 .with_system(clear_items)
         );
-        // app.add_system_set(
-        //     SystemSet::on_exit(GameState::MapGenerate)
-        //         .with_system(spawn_items)
-        // );
+        app.add_system_set(
+            SystemSet::on_exit(GameState::MapGenerate)
+                .with_system(spawn_items)
+        );
         app.add_system_set(
             SystemSet::on_enter(GameState::MapGenerate)
                 .with_system(clear_items)
+        );
+        app.add_system_set(
+            SystemSet::on_update(GameState::PlayerTurn)
+                .with_system(use_item)
         );
     }
 }
@@ -50,5 +60,22 @@ fn clear_items(
 ) {
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub struct UseItemEvent(pub usize);
+
+pub fn use_item(
+    mut ev_use_item: EventReader<UseItemEvent>,
+    mut ev_ui: EventWriter<RedrawUIEvent>,
+    mut player_data: ResMut<PlayerData>,
+    mut player_query: Query<&mut Unit, With<Player>>
+) {
+    for ev in ev_use_item.iter() {
+        if let Ok(mut unit) = player_query.get_single_mut() {
+            player_data.items.remove(ev.0);
+            unit.ap += 1;
+            ev_ui.send(RedrawUIEvent);
+        }
     }
 }

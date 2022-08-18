@@ -17,7 +17,7 @@ pub fn draw_items(
 ) {
     for (entity, _item, position) in item_query.iter() {
         let mut sprite = TextureAtlasSprite::new(4);
-        sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
+        sprite.custom_size = Some(Vec2::splat(0.5 * TILE_SIZE));
 
         commands.entity(entity)
             .insert(ItemRenderer)

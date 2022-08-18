@@ -8,6 +8,7 @@ use crate::board::{
     Position,
     tile::{Tile, TileKind}
 };
+use crate::vectors::Vector2Int;
 
 mod action;
 pub mod behaviour;
@@ -140,11 +141,11 @@ fn spawn_units(
         Ok(b) => b,
         Err(_) => return
     };
-    let mut blocker_positions = blocker_query.iter()
+    let mut blocker_positions: Vec<Vector2Int> = blocker_query.iter()
         .map(|a| a.v)
         .collect();
 
-    match player::spawn_player(&mut commands, &board, &blocker_positions) {
+    match player::spawn_player(&mut commands, &board) {
         Some(v) => blocker_positions.push(v),
         None => ()
     };
