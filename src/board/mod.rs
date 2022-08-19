@@ -36,6 +36,8 @@ impl Plugin for BoardPlugin {
             SystemSet::on_exit(GameState::GameOver)
                 .with_system(clear_board)
         );
+        app.add_event::<tile::TileInteractionEvent>();
+        app.add_system(tile::tile_interaction);
     }
 }
 

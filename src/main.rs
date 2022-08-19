@@ -3,6 +3,7 @@ use bevy::render::texture::ImageSettings;
 use bevy_inspector_egui::WorldInspectorPlugin;
 
 mod assets;
+mod command;
 mod board;
 mod camera;
 mod graphics;
@@ -28,7 +29,7 @@ fn main() {
     app.insert_resource(ImageSettings::default_nearest());
 
     app.add_plugins(DefaultPlugins);
-    // app.add_plugin(WorldInspectorPlugin::new());
+    app.add_plugin(WorldInspectorPlugin::new());
     app.init_resource::<assets::AssetList>();
 
     app.add_state(states::GameState::LoadAssets);
@@ -39,6 +40,7 @@ fn main() {
             .with_system(assets::check_asset_loading)
     );
 
+    app.add_plugin(command::CommandPlugin);
     app.add_plugin(board::BoardPlugin);
     app.add_plugin(units::UnitsPlugin);
     app.add_plugin(items::ItemsPlugin);

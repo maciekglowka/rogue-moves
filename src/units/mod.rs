@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
+use crate::command::{CommandEvent, CommandType};
+
 use crate::states::{AnimationState, GameState};
 use crate::board::{
     Blocker,
@@ -97,26 +99,12 @@ pub struct Unit {
 }
 
 impl Unit {
-    pub fn handle_turn_end(
-            &mut self,
-            tile_query: &Query<(&Position, &Tile)>,
-            position: &Position
+    pub fn handle_move_end(
+            &mut self
         ) {   
-        self.ap -= 1;
-
-        let tile = tile_query.iter()
-            .filter(|(p, _)| p.v == position.v)
-            .next()
-            .unwrap();
-
-        match tile.1.kind {
-            TileKind::Bush => {
-                self.state = UnitState::Paused;
-                self.ap = 0;
-            },
-            _ => ()
-        };
+        self.ap = self.ap.saturating_sub(1);
     }
+    
     pub fn handle_turn_start(&mut self) {
         match self.state {
             UnitState::Active => self.ap = BASE_AP,

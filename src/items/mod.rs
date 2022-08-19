@@ -4,6 +4,7 @@ use crate::board::{
     Blocker, Board, Position,
     utils::get_spawn_position
 };
+use crate::command::{CommandEvent, CommandType};
 use crate::units::{
     player::{Player, PlayerData},
     Unit
@@ -68,13 +69,14 @@ pub struct UseItemEvent(pub usize);
 pub fn use_item(
     mut ev_use_item: EventReader<UseItemEvent>,
     mut ev_ui: EventWriter<RedrawUIEvent>,
+    mut ev_command: EventWriter<CommandEvent>,
     mut player_data: ResMut<PlayerData>,
-    mut player_query: Query<&mut Unit, With<Player>>
+    player_query: Query<Entity, With<Player>>
 ) {
     for ev in ev_use_item.iter() {
-        if let Ok(mut unit) = player_query.get_single_mut() {
+        if let Ok(entity) = player_query.get_single() {
             player_data.items.remove(ev.0);
-            unit.ap += 1;
+            ev_command.send(CommandEvent(CommandType::AddAP(entity, 1)));
             ev_ui.send(RedrawUIEvent);
         }
     }

@@ -4,13 +4,13 @@ use std::collections::VecDeque;
 use crate::board::{
     Blocker, Board, Position,
     utils::get_spawn_position,
-    tile::Tile
+    tile::{Tile, TileInteractionEvent}
 };
 use crate::states::{GameState, AnimationState};
 use crate::vectors::Vector2Int;
 
 use super::data::get_unit_behaviour;
-use super::player::{Player, self};
+use super::player::Player;
 use super::Unit;
 
 pub struct NPCQueue {
@@ -27,7 +27,8 @@ pub fn tick(
     mut npc_queue: ResMut<NPCQueue>,
     unit_position: Query<(Entity, &Position), With<Unit>>,
     mut unit_query: Query<&mut Unit>,
-    tile_query: Query<(&Position, &Tile)>
+    tile_query: Query<(&Position, &Tile)>,
+    mut ev_tile: EventWriter<TileInteractionEvent>
 ) {
     if game_state.current() != &GameState::NPCTurn { return; }
 
@@ -42,11 +43,9 @@ pub fn tick(
             };
 
         let mut unit = unit_query.get_mut(entity).unwrap();
-        let turn_end = unit.handle_turn_end(
-            &tile_query,
-            position,
-        );
+        let turn_end = unit.handle_move_end();
         npc_queue.current = None;
+        ev_tile.send(TileInteractionEvent(entity));
     }
 }
 

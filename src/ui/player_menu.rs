@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::ui::FocusPolicy;
 
 const BUTTON_SIZE: Val = Val::Px(64.);
 const BUTTON_MARGIN: Val = Val::Px(10.);
@@ -41,9 +42,10 @@ pub fn draw_menu(
     player_data: Res<PlayerData>,
     // assets: Res<super::FontAssets>,
     assets: Res<PlayerMenuAssets>,
-    mut ev_draw_cursor: EventReader<super::RedrawUIEvent>,
+    item_assets: Res<crate::graphics::item_renderer::ItemSprites>,
+    mut ev_redraw_ui: EventReader<super::RedrawUIEvent>,
 ) {
-    for _ in ev_draw_cursor.iter() {
+    for _ in ev_redraw_ui.iter() {
         destroy_menu(&mut commands, &menu_query);
 
         let menu = commands
@@ -62,12 +64,24 @@ pub fn draw_menu(
             .insert(PlayerMenu)
             .id();
 
-        for (idx, item_entity) in player_data.items.iter().enumerate() {
+        for (idx, item) in player_data.items.iter().enumerate() {
             commands.entity(menu)
                 .with_children(|parent| {
                     parent.spawn_bundle(
                         get_button_bundle(&assets)
                     )
+                    .with_children(|parent| {
+                        parent.spawn_bundle(ImageBundle {
+                            style: Style {
+                                size: Size::new(Val::Percent(50.), Val::Percent(50.)),
+                                ..Default::default()
+                            },
+                            color: UiColor::from(Color::MAROON),
+                            image: UiImage(assets.0.clone()),
+                            focus_policy: FocusPolicy::Pass,
+                            ..Default::default()
+                        });
+                    })
                     .insert(
                         PlayerButton{idx}
                     );
@@ -95,6 +109,8 @@ fn get_button_bundle(
         style: Style {
             size: Size::new(BUTTON_SIZE, BUTTON_SIZE),
             margin: UiRect::new(Val::Px(0.), BUTTON_MARGIN, Val::Px(0.), BUTTON_MARGIN),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
             ..Default::default()
         },
         color: BUTTON_COLOR.into(),

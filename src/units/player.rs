@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::board::{
     Blocker, Board, Position,
     utils::get_spawn_position,
-    tile::Tile
+    tile::TileInteractionEvent
 };
 use crate::items::Item;
 use crate::ui;
@@ -81,8 +81,6 @@ pub fn move_player(
                 &blocker_query.iter().collect()
             );
 
-            // range.push(position.v);
-
             if !range.contains(&ev.0) {
                 continue;
             }
@@ -95,14 +93,14 @@ pub fn move_player(
 
 pub fn tick(
     mut commands: Commands,
-    mut game_state: ResMut<State<GameState>>,
+    game_state: Res<State<GameState>>,
     mut player_data: ResMut<PlayerData>,
     mut player_query: Query<(Entity, &mut Unit), With<Player>>,
     unit_position: Query<(Entity, &Position), With<Unit>>,
-    mut unit_query: Query<&mut Unit, Without<Player>>,
+    unit_query: Query<&Unit, Without<Player>>,
     mut item_query: Query<(Entity, &Item, &Position)>,
     mut ev_ui: EventWriter<ui::RedrawUIEvent>,
-    tile_query: Query<(&Position, &Tile)>
+    mut ev_tile: EventWriter<TileInteractionEvent>
 ) {
     if game_state.current() != &GameState::PlayerTurn { return; }
 
@@ -119,28 +117,27 @@ pub fn tick(
         None => {}
     };   
     
-    let item_picked = try_pick_item(
+    try_pick_item(
         &mut commands,
         position,
         &mut item_query,
         &mut player_data
     );
 
-    unit.handle_turn_end(
-        &tile_query,
-        &position
-    );
+    unit.handle_move_end();
 
-    // if unit.ap > 0 || item_picked {ev_ui.send(ui::RedrawUIEvent); }
     ev_ui.send(ui::RedrawUIEvent);
+    ev_tile.send(TileInteractionEvent(entity));
 }
 
 pub fn spawn_player(
     mut commands: &mut Commands,
     board: &Board,
 ) -> Option<Vector2Int> {
+
     let behaviour = get_unit_behaviour(&UnitKind::Player);
     let position = board.stair_v;
+
     commands.spawn()
         .insert(Position { v: position })
         .insert(Player)
@@ -160,14 +157,11 @@ fn try_pick_item (
     player_position: &Position,
     mut item_query: &mut Query<(Entity, &Item, &Position)>,
     mut player_data: &mut ResMut<PlayerData>,
-) -> bool {
-    let mut changed = false;
+) {
     for (entity, item, position) in item_query.iter() {
         if position.v != player_position.v { continue; }
 
         commands.entity(entity).despawn_recursive();
         player_data.items.push(item.clone());
-        changed = true;
     }
-    changed
 }
