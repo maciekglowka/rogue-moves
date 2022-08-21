@@ -87,12 +87,6 @@ pub fn load_assets(
     let image_handle = asset_server.load("units.png");
     asset_list.0.push(image_handle.clone_untyped());
 
-    // let atlas = TextureAtlas::from_grid_with_padding(
-    //     image_handle,
-    //     Vec2::splat(9.0),
-    //     16, 16,
-    //     Vec2::splat(2.0)
-    // );
     let atlas = TextureAtlas::from_grid(image_handle, Vec2::splat(16.0), 2, 8);
 
     let atlas_handle = texture_atlases.add(atlas);
@@ -106,9 +100,7 @@ fn get_sprite_idx(kind: &UnitKind) -> usize {
         UnitKind::Frog => 6,
         UnitKind::Hen => 4,
         UnitKind::Bear => 8,
-        // UnitKind::Cat => 99,
         UnitKind::Stork => 10,
-        // UnitKind::Puma => 112
         UnitKind::Fox => 12,
         UnitKind::Wolf => 14
     }

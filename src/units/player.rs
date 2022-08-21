@@ -14,6 +14,8 @@ use super::behaviour::Behaviour;
 use super::data::get_unit_behaviour;
 use super::{Unit, UnitKind};
 
+const MAX_ITEMS: usize = 3;
+
 #[derive(Component)]
 pub struct Player;
 
@@ -62,7 +64,7 @@ pub fn player_status(
 }
 
 pub fn move_player(
-    mut ev: EventReader<MovePlayerEvent>,
+    mut ev_move: EventReader<MovePlayerEvent>,
     mut query: Query<(Entity, &mut Position), With<Player>>,
     mut animation_state: ResMut<State<AnimationState>>,
     // mut game_state: ResMut<State<GameState>>,
@@ -71,7 +73,7 @@ pub fn move_player(
     player_data: Res<PlayerData>,
 ) {
     if animation_state.current() == &AnimationState::Animating { return ; }
-    for ev in ev.iter() {
+    for ev in ev_move.iter() {
         if let Ok((_, mut position)) = query.get_single_mut() {
             let board = board_query.get_single().unwrap();
             
@@ -158,6 +160,7 @@ fn try_pick_item (
     mut item_query: &mut Query<(Entity, &Item, &Position)>,
     mut player_data: &mut ResMut<PlayerData>,
 ) {
+    if player_data.items.len() >= MAX_ITEMS { return; }
     for (entity, item, position) in item_query.iter() {
         if position.v != player_position.v { continue; }
 

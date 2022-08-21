@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::items::Item;
+use crate::items::{Item, ItemKind};
 use crate::board::Position;
 
 pub struct ItemSprites(pub Handle<TextureAtlas>);
@@ -15,9 +15,11 @@ pub fn draw_items(
     item_query: Query<(Entity, &Item, &Position), Without<ItemRenderer>>,
     sprite_sheet: Res<ItemSprites>
 ) {
-    for (entity, _item, position) in item_query.iter() {
-        let mut sprite = TextureAtlasSprite::new(4);
-        sprite.custom_size = Some(Vec2::splat(0.5 * TILE_SIZE));
+    for (entity, item, position) in item_query.iter() {
+        let mut sprite = TextureAtlasSprite::new(
+            get_sprite_idx(&item.kind)
+        );
+        sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
 
         commands.entity(entity)
             .insert(ItemRenderer)
@@ -43,17 +45,18 @@ pub fn load_assets(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut asset_list: ResMut<crate::assets::AssetList> 
 ) {
-    let image_handle = asset_server.load("ascii.png");
+    let image_handle = asset_server.load("items.png");
     asset_list.0.push(image_handle.clone_untyped());
 
-    let atlas = TextureAtlas::from_grid_with_padding(
-        image_handle,
-        Vec2::splat(9.0),
-        16, 16,
-        Vec2::splat(2.0),
-        Vec2::ZERO
-    );
+    let atlas = TextureAtlas::from_grid(image_handle, Vec2::splat(16.0), 2, 2);
 
     let atlas_handle = texture_atlases.add(atlas);
     commands.insert_resource(ItemSprites(atlas_handle));
+}
+
+fn get_sprite_idx(kind: &ItemKind) -> usize {
+    match kind {
+        ItemKind::StopMushroom => 0,
+        ItemKind::SpeedMushroom => 2,
+    }
 }

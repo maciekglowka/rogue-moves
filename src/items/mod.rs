@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 use crate::board::{
     Blocker, Board, Position,
@@ -13,6 +14,8 @@ use crate::ui::RedrawUIEvent;
 use crate::states::GameState;
 
 pub struct ItemsPlugin;
+
+const ITEM_CHANCE: f32 = 0.5;
 
 impl Plugin for ItemsPlugin {
     fn build(&self, app: &mut App) {
@@ -36,8 +39,16 @@ impl Plugin for ItemsPlugin {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum ItemKind {
+    SpeedMushroom,
+    StopMushroom
+}
+
 #[derive(Clone, Component)]
-pub struct Item;
+pub struct Item {
+    pub kind: ItemKind
+}
 
 fn spawn_items(
     mut commands: Commands,
@@ -45,13 +56,22 @@ fn spawn_items(
     blocker_query: Query<&Position, With<Blocker>>
 ) {
     let board = board_query.get_single().unwrap();
+    let mut rng = rand::thread_rng();
+    if rng.gen_range(0.0..1.0) > ITEM_CHANCE { return; }
+
+    let kind = match rng.gen_range(0.0..1.0) {
+        a if a < 0.5 => ItemKind::SpeedMushroom,
+        _ => ItemKind::StopMushroom
+    };
+
     let blocker_positions = blocker_query.iter()
         .map(|a| a.v)
         .collect();
+
     if let Some(position) = get_spawn_position(&blocker_positions, &board) {
         commands.spawn()
             .insert(Position { v: position })
-            .insert(Item);
+            .insert(Item { kind });
     }
 }
 
@@ -75,9 +95,18 @@ pub fn use_item(
 ) {
     for ev in ev_use_item.iter() {
         if let Ok(entity) = player_query.get_single() {
-            player_data.items.remove(ev.0);
-            ev_command.send(CommandEvent(CommandType::AddAP(entity, 1)));
-            ev_ui.send(RedrawUIEvent);
+            if let Some(item) = player_data.items.get(ev.0) {
+                match item.kind {
+                    ItemKind::SpeedMushroom => {
+                        ev_command.send(CommandEvent(CommandType::AddAP(entity, 1)))
+                    },
+                    ItemKind::StopMushroom => {
+                        ev_command.send(CommandEvent(CommandType::RemoveAP(entity)))
+                    }
+                }
+                player_data.items.remove(ev.0);                                
+                ev_ui.send(RedrawUIEvent);
+            }
         }
     }
 }

@@ -5,10 +5,10 @@ const BUTTON_SIZE: Val = Val::Px(64.);
 const BUTTON_MARGIN: Val = Val::Px(10.);
 const MENU_PADDING: Val = Val::Px(10.);
 
-pub const BUTTON_COLOR: Color = Color::WHITE;
+pub const BUTTON_COLOR: Color = Color::Rgba { red: 0.84, green: 0.85, blue: 0.84, alpha: 1. };
 pub const BUTTON_COLOR_CLICK: Color = Color::GRAY;
 
-use crate::items::UseItemEvent;
+use crate::items::{UseItemEvent, ItemKind};
 use crate::units::{
     player::PlayerData
 };
@@ -40,7 +40,7 @@ pub fn draw_menu(
     mut commands: Commands,
     menu_query: Query<Entity, With<PlayerMenu>>,
     player_data: Res<PlayerData>,
-    // assets: Res<super::FontAssets>,
+    font_assets: Res<super::FontAssets>,
     assets: Res<PlayerMenuAssets>,
     item_assets: Res<crate::graphics::item_renderer::ItemSprites>,
     mut ev_redraw_ui: EventReader<super::RedrawUIEvent>,
@@ -71,16 +71,28 @@ pub fn draw_menu(
                         get_button_bundle(&assets)
                     )
                     .with_children(|parent| {
-                        parent.spawn_bundle(ImageBundle {
-                            style: Style {
-                                size: Size::new(Val::Percent(50.), Val::Percent(50.)),
-                                ..Default::default()
+                        // parent.spawn_bundle(ImageBundle {
+                        //     style: Style {
+                        //         size: Size::new(Val::Percent(50.), Val::Percent(50.)),
+                        //         ..Default::default()
+                        //     },
+                        //     color: UiColor::from(Color::MAROON),
+                        //     image: UiImage(assets.0.clone()),
+                        //     focus_policy: FocusPolicy::Pass,
+                        //     ..Default::default()
+                        // });
+                        parent.spawn_bundle(TextBundle::from_section(
+                            match item.kind {
+                                ItemKind::SpeedMushroom => "+1@",
+                                ItemKind::StopMushroom => "0@"
                             },
-                            color: UiColor::from(Color::MAROON),
-                            image: UiImage(assets.0.clone()),
-                            focus_policy: FocusPolicy::Pass,
-                            ..Default::default()
-                        });
+                            TextStyle {
+                                color: BUTTON_COLOR,
+                                font: font_assets.font.clone(),
+                                font_size: 18.,
+                                ..Default::default()
+                            }
+                        ));
                     })
                     .insert(
                         PlayerButton{idx}
