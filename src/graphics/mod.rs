@@ -6,6 +6,7 @@ pub mod board_renderer;
 pub mod item_renderer;
 pub mod sprites;
 pub mod unit_renderer;
+mod utils;
 
 pub const TILE_SIZE: f32 = 64.;
 
@@ -39,6 +40,12 @@ impl Plugin for GraphicsPlugin {
         app.add_system_set(
             SystemSet::on_exit(GameState::Spawning)
                 .with_system(camera_center)
+        );
+        app.insert_resource(
+            unit_renderer::SpriteTimer::new()
+        );
+        app.add_system(
+            unit_renderer::animate_sprites
         );
     }
 }

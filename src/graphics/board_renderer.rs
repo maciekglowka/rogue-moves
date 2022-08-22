@@ -6,6 +6,7 @@ use bevy::{
 
 use crate::board::{Board, Position, tile::Tile, tile::TileKind};
 use super::{MAP_Z, TILE_SIZE};
+use super::utils::QuadMesh;
 
 #[derive(Component)]
 pub struct BoardRenderer;
@@ -21,47 +22,27 @@ pub fn draw_board(
         Ok(b) => b,
         Err(_) => return
     };
-    let mut verts = Vec::new();
-    let mut normals = Vec::new();
-    let mut uvs = Vec::new();
-    let mut tris = Vec::new();
 
-    let mut idx = 0;
+    let mut base_quad = QuadMesh::new(MAP_Z);
 
     for (position, tile) in tile_query.iter() {
-        verts.push([position.v.x as f32, position.v.y as f32, MAP_Z]);
-        verts.push([position.v.x as f32, position.v.y as f32 + 1.0, MAP_Z]);
-        verts.push([position.v.x as f32 + 1.0, position.v.y as f32 + 1.0, MAP_Z]);
-        verts.push([position.v.x as f32 + 1.0, position.v.y as f32, MAP_Z]);
+        let base_uv = ((position.v.x as u8 + position.v.y as u8) % 2, 0);
+        base_quad.add_quad(position, base_uv);
 
-        for _ in 0..4 {
-            normals.push([0.0, 1.0, 0.0]);
-        }
-
-        let uv = match tile.kind {
-            TileKind::Floor => (0, 0),
-            TileKind::Wall => (1, 0),
-            TileKind::Stair => (2, 0),
-            TileKind::Bush => (3, 0),
+        let feature_uv = match tile.kind {
+            TileKind::Floor => continue,
+            TileKind::Wall => (0, 1),
+            TileKind::Stair => (1, 1),
+            TileKind::Bush => (2, 1),
         };
-
-        uvs.extend(super::sprites::atlas_uvs(uv.0, uv.1, 4));
-        tris.extend([idx, idx + 2, idx + 1, idx, idx + 3, idx +2]);
-        idx += 4;
+        base_quad.add_quad(position, feature_uv);
     }
-
-    let mut mesh = Mesh::new(render::render_resource::PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, verts);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-
-    mesh.set_indices(Some(render::mesh::Indices::U32(tris)));
 
     commands
         .entity(board.0)
         .insert(BoardRenderer)
         .insert_bundle(sprite::MaterialMesh2dBundle {
-            mesh: sprite::Mesh2dHandle(meshes.add(mesh)),
+            mesh: sprite::Mesh2dHandle(meshes.add(base_quad.to_mesh())),
             material: assets.material.clone(),
             transform: Transform::default().with_scale(Vec3::new(TILE_SIZE, TILE_SIZE, 1.)),
         ..default()});

@@ -1,13 +1,44 @@
 use bevy::prelude::*;
 
-use crate::units::{Unit, UnitKind};
+use crate::units::{Unit, UnitKind, UnitState};
 use crate::board::Position;
 use crate::states::AnimationState;
 
 use super::{TILE_SIZE, UNIT_Z, UNIT_SPEED};
 
+pub struct SpriteTimer(Timer);
+
+impl SpriteTimer {
+    pub fn new() -> SpriteTimer {
+        SpriteTimer(Timer::from_seconds(0.5, true))
+    }
+}
+
 #[derive(Component)]
-pub struct UnitRenderer;
+pub struct UnitRenderer {
+    pub base_sprite_idx: usize,
+    pub frame: usize,
+    pub frame_count: usize
+}
+
+pub fn animate_sprites(
+    time: Res<Time>,
+    mut timer: ResMut<SpriteTimer>,
+    mut query: Query<(&Unit, &mut UnitRenderer, &mut TextureAtlasSprite)>
+) {
+    timer.0.tick(time.delta());
+    if timer.0.just_finished() {
+        for (unit, mut renderer, mut sprite) in query.iter_mut() {
+            renderer.frame = (renderer.frame + 1) % renderer.frame_count;
+            sprite.index = renderer.frame + renderer.base_sprite_idx;
+
+            sprite.color = match unit.state {
+                UnitState::Active => Color::WHITE,
+                UnitState::Paused => Color::SILVER
+            }
+        }
+    }
+}
 
 pub fn animate_units(
     mut unit_query: Query<(&Position, &mut Transform)>,
@@ -41,13 +72,16 @@ pub fn draw_units(
     sprite_sheet: Res<UnitSprites>
 ) {
     for (entity, unit, position) in unit_query.iter() {
-        let mut sprite = TextureAtlasSprite::new(
-            get_sprite_idx(&unit.kind)
-        );
+        let idx = get_sprite_idx(&unit.kind);
+        let mut sprite = TextureAtlasSprite::new(idx);
         sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
 
         commands.entity(entity)
-            .insert(UnitRenderer)
+            .insert(UnitRenderer {
+                base_sprite_idx: idx,
+                frame: 0,
+                frame_count: 2
+            })
             .insert_bundle(SpriteSheetBundle{
                 sprite: sprite,
                 texture_atlas: sprite_sheet.0.clone(),
