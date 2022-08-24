@@ -6,6 +6,7 @@ use crate::board::{
     utils::get_spawn_position,
     tile::{Tile, TileInteractionEvent}
 };
+use crate::command::{CommandEvent, CommandType};
 use crate::states::{GameState, AnimationState};
 use crate::vectors::Vector2Int;
 
@@ -22,28 +23,27 @@ pub struct NPCQueue {
 pub struct NPC;
 
 pub fn tick(
-    mut commands: Commands,
     mut game_state: ResMut<State<GameState>>,
     mut npc_queue: ResMut<NPCQueue>,
     unit_position: Query<(Entity, &Position), With<Unit>>,
     mut unit_query: Query<&mut Unit>,
-    tile_query: Query<(&Position, &Tile)>,
-    mut ev_tile: EventWriter<TileInteractionEvent>
+    mut ev_tile: EventWriter<TileInteractionEvent>,
+    mut ev_command: EventWriter<CommandEvent>
 ) {
     if game_state.current() != &GameState::NPCTurn { return; }
 
     if let Some(entity) = npc_queue.current {
         let position = unit_position.get(entity).unwrap().1;
 
-        if let Some(killed) = super::check_unit_interaction(
+        if let Some(attacked) = super::check_unit_interaction(
             entity,
             position, 
             &unit_position) {
-                commands.entity(killed).despawn_recursive();
+                ev_command.send(CommandEvent(CommandType::AttackUnit(entity, attacked)));
             };
 
         let mut unit = unit_query.get_mut(entity).unwrap();
-        let turn_end = unit.handle_move_end();
+        unit.handle_move_end();
         npc_queue.current = None;
         ev_tile.send(TileInteractionEvent(entity));
     }
@@ -164,10 +164,6 @@ fn get_best_move(
 
     let mut rated = Vec::new();
     for v in positions {
-        // let mut rank = match v.dist(player_position.v) {
-        //     d if d >=2. || d < 1. => d,
-        //     _ => 5.
-        // };
         let mut rank = v.dist(player_position.v);
         if npc_positions.iter().any(|p| p.v == v) {
             rank += 50.;

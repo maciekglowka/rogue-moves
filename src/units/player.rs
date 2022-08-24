@@ -5,7 +5,9 @@ use crate::board::{
     utils::get_spawn_position,
     tile::TileInteractionEvent
 };
+use crate::items;
 use crate::items::Item;
+use crate::command::{CommandEvent, CommandType};
 use crate::ui;
 use crate::states::{AnimationState, GameState};
 use crate::vectors::Vector2Int;
@@ -22,7 +24,8 @@ pub struct Player;
 pub struct PlayerData {
     pub current_behaviour: Behaviour,
     pub level: u32,
-    pub items: Vec<Item>
+    pub items: Vec<Item>,
+    pub armor: u8
 }
 
 pub fn reset_player_data(
@@ -31,7 +34,8 @@ pub fn reset_player_data(
     commands.insert_resource(PlayerData {
         current_behaviour: super::data::get_unit_behaviour(&UnitKind::Player),
         level: 0,
-        items: Vec::new()
+        items: Vec::new(),
+        armor: 1
     });
 }
 
@@ -67,7 +71,6 @@ pub fn move_player(
     mut ev_move: EventReader<MovePlayerEvent>,
     mut query: Query<(Entity, &mut Position), With<Player>>,
     mut animation_state: ResMut<State<AnimationState>>,
-    // mut game_state: ResMut<State<GameState>>,
     blocker_query: Query<(&Position, &Blocker), Without<Player>>,
     board_query: Query<&Board>,
     player_data: Res<PlayerData>,
@@ -102,7 +105,8 @@ pub fn tick(
     unit_query: Query<&Unit, Without<Player>>,
     mut item_query: Query<(Entity, &Item, &Position)>,
     mut ev_ui: EventWriter<ui::RedrawUIEvent>,
-    mut ev_tile: EventWriter<TileInteractionEvent>
+    mut ev_tile: EventWriter<TileInteractionEvent>,
+    mut ev_command: EventWriter<CommandEvent>
 ) {
     if game_state.current() != &GameState::PlayerTurn { return; }
 
@@ -110,11 +114,11 @@ pub fn tick(
     let position = unit_position.get(entity).unwrap().1;
 
     match super::check_unit_interaction(entity, position, &unit_position) {
-        Some(killed) => {
-            let killed_unit = unit_query.get(killed).unwrap();                
-            player_data.current_behaviour = killed_unit.behaviour.clone();
+        Some(attacked) => {
+            let attacked_unit = unit_query.get(attacked).unwrap();                
+            player_data.current_behaviour = attacked_unit.behaviour.clone();
             unit.ap += 1;
-            commands.entity(killed).despawn_recursive();
+            ev_command.send(CommandEvent(CommandType::AttackUnit(entity, attacked)));
         },
         None => {}
     };   
@@ -165,6 +169,11 @@ fn try_pick_item (
         if position.v != player_position.v { continue; }
 
         commands.entity(entity).despawn_recursive();
-        player_data.items.push(item.clone());
+
+        match items::data::is_passive(item.kind) {
+            false => player_data.items.push(item.clone()),
+            // for now only armor is possible -> change to command if other passive items are needed
+            true => player_data.armor += 1
+        };
     }
 }

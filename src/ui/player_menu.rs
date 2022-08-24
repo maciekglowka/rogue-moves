@@ -84,7 +84,8 @@ pub fn draw_menu(
                         parent.spawn_bundle(TextBundle::from_section(
                             match item.kind {
                                 ItemKind::SpeedMushroom => "+1@",
-                                ItemKind::StopMushroom => "0@"
+                                ItemKind::StopMushroom => "0@",
+                                _ => ""
                             },
                             TextStyle {
                                 color: BUTTON_COLOR,

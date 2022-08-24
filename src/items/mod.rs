@@ -13,6 +13,8 @@ use crate::units::{
 use crate::ui::RedrawUIEvent;
 use crate::states::GameState;
 
+pub mod data;
+
 pub struct ItemsPlugin;
 
 const ITEM_CHANCE: f32 = 0.5;
@@ -42,7 +44,8 @@ impl Plugin for ItemsPlugin {
 #[derive(Clone, Copy, Debug)]
 pub enum ItemKind {
     SpeedMushroom,
-    StopMushroom
+    StopMushroom,
+    Armor
 }
 
 #[derive(Clone, Component)]
@@ -59,10 +62,7 @@ fn spawn_items(
     let mut rng = rand::thread_rng();
     if rng.gen_range(0.0..1.0) > ITEM_CHANCE { return; }
 
-    let kind = match rng.gen_range(0.0..1.0) {
-        a if a < 0.5 => ItemKind::SpeedMushroom,
-        _ => ItemKind::StopMushroom
-    };
+    let kind = data::get_random_kind();
 
     let blocker_positions = blocker_query.iter()
         .map(|a| a.v)
@@ -102,7 +102,8 @@ pub fn use_item(
                     },
                     ItemKind::StopMushroom => {
                         ev_command.send(CommandEvent(CommandType::RemoveAP(entity)))
-                    }
+                    },
+                    _ => ()
                 }
                 player_data.items.remove(ev.0);                                
                 ev_ui.send(RedrawUIEvent);

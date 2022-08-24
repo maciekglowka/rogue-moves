@@ -58,5 +58,6 @@ fn get_sprite_idx(kind: &ItemKind) -> usize {
     match kind {
         ItemKind::StopMushroom => 0,
         ItemKind::SpeedMushroom => 2,
+        ItemKind::Armor => 1,
     }
 }
