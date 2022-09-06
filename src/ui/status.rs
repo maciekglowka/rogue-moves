@@ -34,15 +34,14 @@ pub fn draw_status(
     assets: Res<super::FontAssets>,
     mut ev_draw_cursor: EventReader<super::RedrawUIEvent>,
 ) {
+    // TODO remove reduntant items
     for _ in ev_draw_cursor.iter() {
         destroy_status(&mut commands, &status_query);
 
         if let Ok(player) = player_query.get_single() {
             let s = format!(
-                "Level: {} | {} | {}",
-                player_data.level,
-                "@".repeat(player.ap as usize),
-                "#".repeat(player_data.armor as usize)
+                "Level: {}",
+                player_data.level
             );
             let color = Color::Rgba { red: 0.84, green: 0.85, blue: 0.84, alpha: 1. };
             commands

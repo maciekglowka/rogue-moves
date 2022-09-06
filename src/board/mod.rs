@@ -84,8 +84,8 @@ pub fn generate_board(
                 .id();
 
             if is_blocker {
-             commands.entity(tile)
-                .insert(Blocker { is_targetable: false });
+                commands.entity(tile)
+                    .insert(Blocker { is_targetable: false });
             };
 
             tiles.insert(v, tile);

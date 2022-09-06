@@ -11,6 +11,7 @@ mod utils;
 pub const TILE_SIZE: f32 = 64.;
 
 pub const MAP_Z: f32 = 0.;
+pub const MASK_Z: f32 = 1.;
 pub const UNIT_Z: f32 = 10.;
 pub const ITEM_Z: f32 = 5.;
 pub const OVERLAY_Z: f32 = 100.;

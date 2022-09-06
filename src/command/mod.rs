@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::ui::RedrawUIEvent;
 use crate::units::{
     player::{Player, PlayerData},
     Unit,
@@ -28,13 +29,15 @@ impl Plugin for CommandPlugin {
 
 fn add_ap(
     mut ev_command: EventReader<CommandEvent>,
-    mut unit_query: Query<&mut Unit>
+    mut unit_query: Query<&mut Unit>,
+    mut ev_redraw_ui: EventWriter<RedrawUIEvent>
 ) {
     for ev in ev_command.iter() {
         match ev.0 {
             CommandType::AddAP(e, ap) => {
                 if let Ok(mut unit) = unit_query.get_mut(e) {
                     unit.ap += ap;
+                    ev_redraw_ui.send(RedrawUIEvent);
                 }
             },
             _ => ()
@@ -44,13 +47,15 @@ fn add_ap(
 
 fn remove_ap(
     mut ev_command: EventReader<CommandEvent>,
-    mut unit_query: Query<&mut Unit>
+    mut unit_query: Query<&mut Unit>,
+    mut ev_redraw_ui: EventWriter<RedrawUIEvent>
 ) {
     for ev in ev_command.iter() {
         match ev.0 {
             CommandType::RemoveAP(e) => {
                 if let Ok(mut unit) = unit_query.get_mut(e) {
                     unit.ap = 0;
+                    ev_redraw_ui.send(RedrawUIEvent);
                 }
             },
             _ => ()

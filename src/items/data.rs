@@ -13,8 +13,8 @@ pub fn is_passive(kind: ItemKind) -> bool {
 pub fn get_random_kind() -> ItemKind {
     let mut rng = rand::thread_rng();
     match rng.gen_range(0.0..1.0) {
-        a if a < 0.35 => ItemKind::SpeedMushroom,
-        a if a < 0.85 => ItemKind::StopMushroom,
-        _ => ItemKind::Armor
+        a if a < 0.1 => ItemKind::Armor,
+        a if a < 0.45 => ItemKind::StopMushroom,
+        _ => ItemKind::SpeedMushroom
     }
 }

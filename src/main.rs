@@ -23,9 +23,6 @@ fn main() {
             ..Default::default()
         }
     );
-    app.insert_resource(
-        ClearColor(Color::BLACK)
-    );
     app.insert_resource(ImageSettings::default_nearest());
 
     app.add_plugins(DefaultPlugins);

@@ -37,7 +37,7 @@ impl QuadMesh {
             self.normals.push([0.0, 1.0, 0.0]);
         }
     
-        self.uvs.extend(super::sprites::atlas_uvs(uv.0, uv.1, 4));
+        self.uvs.extend(super::sprites::atlas_uvs(uv.0, uv.1, 8));
         let idx = 4 * self.quad_idx;
         self.tris.extend([idx, idx + 2, idx + 1, idx, idx + 3, idx + 2]);
         self.quad_idx += 1;

@@ -164,9 +164,10 @@ fn try_pick_item (
     mut item_query: &mut Query<(Entity, &Item, &Position)>,
     mut player_data: &mut ResMut<PlayerData>,
 ) {
-    if player_data.items.len() >= MAX_ITEMS { return; }
     for (entity, item, position) in item_query.iter() {
         if position.v != player_position.v { continue; }
+
+        if !items::data::is_passive(item.kind) && player_data.items.len() >= MAX_ITEMS { return; }
 
         commands.entity(entity).despawn_recursive();
 
