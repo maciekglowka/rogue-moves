@@ -103,7 +103,6 @@ pub fn generate_board(
 fn clear_board(
     mut commands: Commands,
     query: Query<Entity, With<Board>>,
-    mut game_state: ResMut<State<GameState>>,
 ) {
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();

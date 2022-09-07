@@ -9,7 +9,7 @@ use crate::vectors::Vector2Int;
 use super::{MAP_Z, MASK_Z, TILE_SIZE};
 use super::utils::QuadMesh;
 
-const MASK_RANGE: u8 = 8;
+pub const MASK_RANGE: u8 = 8;
 
 #[derive(Component)]
 pub struct BoardRenderer;

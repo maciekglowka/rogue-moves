@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::states::GameState;
+use crate::states::{FadeState, GameState};
 use crate::units::npc::NPC;
 
 pub struct ManagerPlugin;
@@ -15,10 +15,11 @@ impl Plugin for ManagerPlugin {
 }
 
 fn next_level(
-    mut game_state: ResMut<State<GameState>>,
+    mut fade_state: ResMut<State<FadeState>>,
     npc_query: Query<&NPC>
 ) {
     if npc_query.is_empty() {
-        game_state.set(GameState::MapGenerate);
+        // game_state.set(GameState::MapGenerate);
+        fade_state.set(FadeState::In);
     }
 }

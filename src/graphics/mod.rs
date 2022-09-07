@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-use crate::states::{AnimationState, GameState};
+use crate::states::{AnimationState, FadeState, GameState};
 
 pub mod board_renderer;
+mod fx;
 pub mod item_renderer;
 pub mod sprites;
 pub mod unit_renderer;
@@ -14,7 +15,8 @@ pub const MAP_Z: f32 = 0.;
 pub const MASK_Z: f32 = 1.;
 pub const UNIT_Z: f32 = 10.;
 pub const ITEM_Z: f32 = 5.;
-pub const OVERLAY_Z: f32 = 100.;
+pub const CURSOR_Z: f32 = 100.;
+pub const OVERLAY_Z: f32 = 200.;
 
 pub const UNIT_SPEED: f32 = 20.;
 
@@ -47,6 +49,24 @@ impl Plugin for GraphicsPlugin {
         );
         app.add_system(
             unit_renderer::animate_sprites
+        );
+
+        // FADE
+        app.add_system_set(
+            SystemSet::on_enter(FadeState::In)
+                .with_system(fx::draw_overlay)
+        );
+        app.add_system_set(
+            SystemSet::on_update(FadeState::In)
+                .with_system(fx::fade_overlay_in)
+        );
+        app.add_system_set(
+            SystemSet::on_update(FadeState::Out)
+                .with_system(fx::fade_overlay_out)
+        );
+        app.add_system_set(
+            SystemSet::on_exit(FadeState::Out)
+                .with_system(fx::clear_overlay)
         );
     }
 }

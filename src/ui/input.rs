@@ -6,7 +6,7 @@ use crate::units::{
     npc::NPC,
     player::MovePlayerEvent
 };
-use crate::states::GameState;
+use crate::states::{FadeState, GameState};
 use crate::vectors::Vector2Int;
 
 use super::player_menu::PlayerButtonClickEvent;

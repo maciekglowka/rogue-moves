@@ -16,3 +16,10 @@ pub enum AnimationState {
     Idle,
     Animating
 }
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum FadeState {
+    Hidden,
+    In,
+    Out
+}

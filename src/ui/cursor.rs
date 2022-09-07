@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::{render, sprite};
 
 use crate::board::{Blocker, Board, Position};
-use crate::graphics::{TILE_SIZE, OVERLAY_Z};
+use crate::graphics::{TILE_SIZE, CURSOR_Z};
 use crate::units::{
     Unit,
     player::{Player, PlayerData}
@@ -77,7 +77,7 @@ pub fn draw_cursor(
             material: assets.material.clone(),
             transform: Transform::default()
                 .with_scale(Vec3::new(TILE_SIZE, TILE_SIZE, 0.0))
-                .with_translation(Vec3::new(0., 0., OVERLAY_Z)),
+                .with_translation(Vec3::new(0., 0., CURSOR_Z)),
             ..Default::default()
         })
         .insert(Cursor);

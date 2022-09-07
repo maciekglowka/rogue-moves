@@ -31,6 +31,7 @@ fn main() {
 
     app.add_state(states::GameState::LoadAssets);
     app.add_state(states::AnimationState::Idle);
+    app.add_state(states::FadeState::Hidden);
 
     app.add_system_set(
         SystemSet::on_update(states::GameState::LoadAssets)
